@@ -53,8 +53,8 @@ vec3 densitiesRMO(in vec3 pos, in float radius, in float rayHeight, in float mie
 	vec3 density;
 	density.x = exp(-height / rayHeight);
 	density.y = exp(-height / mieHeight);
-    density.z = (1.0 / cosh((ozoneLevel - height) / ozoneFalloff)) * density.x; // Ozone absorption scales with rayleigh
-    return density;
+	density.z = (1.0 / cosh((ozoneLevel - height) / ozoneFalloff)) * density.x; // Ozone absorption scales with rayleigh
+	return density;
 }
 
 /**
@@ -65,7 +65,7 @@ vec3 densitiesRMO(in vec3 pos, in float radius, in float rayHeight, in float mie
  * @return    Rayleigh phase function value
  */
 float rayleighPhase(in float cosTheta) {
-    return (3.0 * (1.0 + cosTheta * cosTheta)) / (16.0 * PI);
+	return (3.0 * (1.0 + cosTheta * cosTheta)) / (16.0 * PI);
 }
 
 /**
@@ -126,69 +126,69 @@ vec3 atmosphere(
 	in float ozoneFalloff
 ) {
 	// Intersect the atmosphere
-    vec2 intersect = raySphereIntersect(pos, dir, atmosphereRadius);
-    if(intersect.x > intersect.y)return color;
-    
+	vec2 intersect = raySphereIntersect(pos, dir, atmosphereRadius);
+	if(intersect.x > intersect.y)return color;
+	
 	float rayPos = max(intersect.x, 0.0);
 	float step = (min(intersect.y, depth) - rayPos) / float(samples); // min(intersect.y, depth) ensures that the tracing ends on collision
 
 	// Accumulators
 	vec3 opticalRMO = vec3(0.0); // Optical depth (accumulated density) of Rayleigh, Mie and ozone
-    vec3 sumR = vec3(0.0);
-    vec3 sumM = vec3(0.0);
-    
-    for(int i = 0; i < samples; i++) {
-        vec3 samplePos = pos + dir * (rayPos + step * 0.5); // Current sampling position
+	vec3 sumR = vec3(0.0);
+	vec3 sumM = vec3(0.0);
+	
+	for(int i = 0; i < samples; i++) {
+		vec3 samplePos = pos + dir * (rayPos + step * 0.5); // Current sampling position
 
 		// Similar to the primary iteration
 		vec2 secIntersect = raySphereIntersect(samplePos, sunDir, atmosphereRadius); // No need to check if intersection happened as we already are inside the sphere
 
 		float secRayPos = 0.0; // secIntersect.x < 0, so max(secIntersect.x, 0.0) = 0
-        float lightStep = secIntersect.y / float(secSamples);
+		float lightStep = secIntersect.y / float(secSamples);
 
-        vec3 lightOpticalRMO = vec3(0.0);
-        
-        for(int j = 0; j < secSamples; j++) {
-            vec3 lightSamplePos = samplePos + sunDir * (secRayPos + lightStep * 0.5);
+		vec3 lightOpticalRMO = vec3(0.0);
+
+		for(int j = 0; j < secSamples; j++) {
+			vec3 lightSamplePos = samplePos + sunDir * (secRayPos + lightStep * 0.5);
 
 			vec3 lightDensities = densitiesRMO(lightSamplePos, planetRadius, rayHeight, mieHeight, ozoneLevel, ozoneFalloff) * lightStep;
 			lightOpticalRMO += lightDensities;
 
-            secRayPos += lightStep;
-        }
+			secRayPos += lightStep;
+		}
 
 		// Accumulate densities
 		vec3 densities = densitiesRMO(samplePos, planetRadius, rayHeight, mieHeight, ozoneLevel, ozoneFalloff) * step;
 		opticalRMO += densities;
 
 		// Accumulate scattered light scaled by proper density factors
-        vec3 scattered = exp(-(rayBeta * (opticalRMO.x + lightOpticalRMO.x) + mieBeta * (opticalRMO.y + lightOpticalRMO.y) + ozoneBeta * (opticalRMO.z + lightOpticalRMO.z)));
-        sumR += scattered * densities.x;
-        sumM += scattered * densities.y;
+		vec3 scattered = exp(-(rayBeta * (opticalRMO.x + lightOpticalRMO.x) + mieBeta * (opticalRMO.y + lightOpticalRMO.y) + ozoneBeta * (opticalRMO.z + lightOpticalRMO.z)));
+		sumR += scattered * densities.x;
+		sumM += scattered * densities.y;
 
-        rayPos += step;
-    }
+		rayPos += step;
+	}
 
 	// Apply phase functions
-    float cosTheta = dot(dir, sunDir);
-    float rayPhase = rayleighPhase(cosTheta);
-    float miePhase = henyeyGreensteinPhase(cosTheta, g);
+	float cosTheta = dot(dir, sunDir);
+	float rayPhase = rayleighPhase(cosTheta);
+	float miePhase = henyeyGreensteinPhase(cosTheta, g);
 	
-    // How much light can pass through the atmosphere
-    vec3 opacity = exp(-(rayBeta * opticalRMO.x + mieBeta * opticalRMO.y + ozoneBeta * opticalRMO.z));
+	// How much light can pass through the atmosphere
+	vec3 opacity = exp(-(rayBeta * opticalRMO.x + mieBeta * opticalRMO.y + ozoneBeta * opticalRMO.z));
 
 	vec3 light = (
-        rayPhase * rayBeta * sumR + // Rayleigh color
-       	miePhase * mieBeta * sumM   // Mie color
-    ) * energy;
-    return max(light, 0.0) + color * opacity;
+		rayPhase * rayBeta * sumR + // Rayleigh color
+	   	miePhase * mieBeta * sumM   // Mie color
+	) * energy;
+	return max(light, 0.0) + color * opacity;
 }
 
 vec3 getSkyEnergy(in vec3 dir) {
 	//return vec3(0.3, 0.8, 1.0) * 8.0;
 
 	vec3 color = vec3(0.0);
-    float depth = INFINITY;
+	float depth = INFINITY;
 
 	vec3 pos = vec3(0.0, ATMOSPHERICS_RADIUS_PLANET + 2.0, 0.0);
 	dir = (gbufferModelViewInverse * vec4(dir, 0.0)).xyz;

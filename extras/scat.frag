@@ -66,62 +66,62 @@ vec3 atmosphere(
 	in float ozoneFalloff
 ) {
 	// Intersect the atmosphere
-    vec2 intersect = raySphereIntersect(pos, dir, atmosphereRadius);
-    if(intersect.x > intersect.y)return scene;
-    
+	vec2 intersect = raySphereIntersect(pos, dir, atmosphereRadius);
+	if(intersect.x > intersect.y)return scene;
+	
 	float rayPos = max(intersect.x, 0.0);
 	float step = (min(intersect.y, depth) - rayPos) / float(samples); // min(intersect.y, depth) ensures that the tracing ends on collision
 
 	// Accumulators
 	vec3 opticalRMO = vec3(0.0); // Optical depth (accumulated density) of Rayleigh, Mie and ozone
-    vec3 sumR = vec3(0.0);
-    vec3 sumM = vec3(0.0);
-    
-    for(int i = 0; i < samples; i++) {
-        vec3 samplePos = pos + dir * (rayPos + step * 0.5); // Current sampling position
+	vec3 sumR = vec3(0.0);
+	vec3 sumM = vec3(0.0);
+	
+	for(int i = 0; i < samples; i++) {
+		vec3 samplePos = pos + dir * (rayPos + step * 0.5); // Current sampling position
 
 		// Similar to the primary iteration
 		vec2 secIntersect = raySphereIntersect(samplePos, sunDir, atmosphereRadius); // No need to check if intersection happened as we already are inside the sphere
 
 		float secRayPos = 0.0; // secIntersect.x < 0, so max(secIntersect.x, 0.0) = 0
-        float lightStep = secIntersect.y / float(secSamples);
+		float lightStep = secIntersect.y / float(secSamples);
 
-        vec3 lightOpticalRMO = vec3(0.0);
-        
-        for(int j = 0; j < secSamples; j++) {
-            vec3 lightSamplePos = samplePos + sunDir * (secRayPos + lightStep * 0.5);
+		vec3 lightOpticalRMO = vec3(0.0);
+		
+		for(int j = 0; j < secSamples; j++) {
+			vec3 lightSamplePos = samplePos + sunDir * (secRayPos + lightStep * 0.5);
 
 			vec3 lightDensities = densitiesRMO(lightSamplePos, planetRadius, rayleighHeight, mieHeight, ozoneLevel, ozoneFalloff) * lightStep;
 			lightOpticalRMO += lightDensities;
 
-            secRayPos += lightStep;
-        }
+			secRayPos += lightStep;
+		}
 
 		// Accumulate densities
 		vec3 densities = densitiesRMO(samplePos, planetRadius, rayleighHeight, mieHeight, ozoneLevel, ozoneFalloff) * step;
 		opticalRMO += densities;
 
 		// Accumulate scattered light scaled by proper density factors
-        vec3 scattered = exp(-(rayBeta * (opticalRMO.x + lightOpticalRMO.x) + mieBeta * (opticalRMO.y + lightOpticalRMO.y) + ozoneBeta * (opticalRMO.z + lightOpticalRMO.z)));
-        sumR += scattered * densities.x;
-        sumM += scattered * densities.y;
+		vec3 scattered = exp(-(rayBeta * (opticalRMO.x + lightOpticalRMO.x) + mieBeta * (opticalRMO.y + lightOpticalRMO.y) + ozoneBeta * (opticalRMO.z + lightOpticalRMO.z)));
+		sumR += scattered * densities.x;
+		sumM += scattered * densities.y;
 
-        rayPos += step;
-    }
+		rayPos += step;
+	}
 
 	// Apply phase functions
-    float cosTheta = dot(dir, sunDir);
-    float rayPhase = rayleighPhase(cosTheta);
-    float miePhase = henyeyGreensteinPhase(cosTheta, g);
+	float cosTheta = dot(dir, sunDir);
+	float rayPhase = rayleighPhase(cosTheta);
+	float miePhase = henyeyGreensteinPhase(cosTheta, g);
 	
-    // How much light can pass through the atmosphere
-    vec3 opacity = exp(-(rayBeta * opticalRMO.x + mieBeta * opticalRMO.y + ozoneBeta * opticalRMO.z));
+	// How much light can pass through the atmosphere
+	vec3 opacity = exp(-(rayBeta * opticalRMO.x + mieBeta * opticalRMO.y + ozoneBeta * opticalRMO.z));
 
 	vec3 light = (
-        rayPhase * rayBeta * sumR + // Rayleigh color
-       	miePhase * mieBeta * sumM   // Mie color
-    ) * energy;
-    return max(light, 0.0) + scene * opacity;
+		rayPhase * rayBeta * sumR + // Rayleigh color
+	   	miePhase * mieBeta * sumM   // Mie color
+	) * energy;
+	return max(light, 0.0) + scene * opacity;
 }
 
 /**
@@ -143,7 +143,7 @@ float henyeyGreensteinPhase(in float cosTheta, in float g) {
  * @return    Rayleigh phase function value
  */
 float rayleighPhase(in float cosTheta) {
-    return (3.0 * (1.0 + cosTheta * cosTheta)) / (16.0 * PI);
+	return (3.0 * (1.0 + cosTheta * cosTheta)) / (16.0 * PI);
 }
 
 /**
@@ -162,8 +162,8 @@ vec3 densitiesRMO(in vec3 pos, in float radius, in float rayleighHeight, in floa
 	vec3 density;
 	density.x = exp(-height / rayleighHeight);
 	density.y = exp(-height / mieHeight);
-    density.z = (1.0 / cosh((ozoneLevel - height) / ozoneFalloff)) * density.x; // Ozone absorption scales with rayleigh
-    return density;
+	density.z = (1.0 / cosh((ozoneLevel - height) / ozoneFalloff)) * density.x; // Ozone absorption scales with rayleigh
+	return density;
 }
 
 /**
@@ -193,38 +193,38 @@ vec2 raySphereIntersect(in vec3 origin, in vec3 dir, in float radius) {
  * @return    normalized view direction
  */
 vec3 viewDir(in vec2 uv, in float ratio) {
-    // uv = uv * vec2(2.0) - vec2(1.0);
+	// uv = uv * vec2(2.0) - vec2(1.0);
 	// uv.x *= ratio;
 	// return normalize(vec3(uv.x, uv.y, -1.0));
 
 	vec2 t = ((uv * 2.0) - vec2(1.0)) * vec2(PI, PI * 0.5); 
-    return vec3(cos(t.y) * cos(t.x), sin(t.y), cos(t.y) * sin(t.x));
+	return vec3(cos(t.y) * cos(t.x), sin(t.y), cos(t.y) * sin(t.x));
 }
 
 vec4 render(in vec3 pos, in vec3 dir, in vec3 lightDir) {
 	vec2 intersect = raySphereIntersect(pos, dir, PLANET_RADIUS);
 	if(intersect.y < 0.0)return vec4(0.0, 0.0, 0.0, INFINITY);
-    float depth = max(intersect.x, 0.0);
+	float depth = max(intersect.x, 0.0);
 	vec3 color = vec3(0.0, 0.0, 0.0);
 	return vec4(color, depth);
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-    vec2 uv = fragCoord.xy / iResolution.xy;
+	vec2 uv = fragCoord.xy / iResolution.xy;
 
 	vec3 pos = vec3(0.0, PLANET_RADIUS + 2.0, 0.0);
 	vec3 dir = viewDir(uv, iResolution.x / iResolution.y);
 	vec3 lightDir = iMouse.y == 0.0 ? 
-        normalize(vec3(0.0, cos(-iTime/8.0), sin(-iTime/8.0))) : 
-    	normalize(vec3(0.0, cos(iMouse.y * -5.0 / iResolution.y), sin(iMouse.y * -5.0 / iResolution.y)));
+		normalize(vec3(0.0, cos(-iTime/8.0), sin(-iTime/8.0))) : 
+		normalize(vec3(0.0, cos(iMouse.y * -5.0 / iResolution.y), sin(iMouse.y * -5.0 / iResolution.y)));
 	vec3 energy = vec3(64.0);
 	
 	vec4 scene = render(pos, dir, lightDir);
-    vec3 color = scene.xyz;
-    float depth = scene.w;
+	vec3 color = scene.xyz;
+	float depth = scene.w;
 	color = atmosphere(pos, dir, lightDir, energy, color, depth, SAMPLES, LIGHT_SAMPLES, RAY_BETA, MIE_BETA, OZONE_BETA, G, PLANET_RADIUS, ATMOSPHERE_RADIUS, RAYLEIGH_HEIGHT, MIE_HEIGHT, OZONE_LEVEL, OZONE_FALLOFF);
-    color = 1.0 - exp(-color);
-    color = pow(color, vec3(1.0 / 2.2));
-    
-    fragColor = vec4(color, 1.0);
+	color = 1.0 - exp(-color);
+	color = pow(color, vec3(1.0 / 2.2));
+	
+	fragColor = vec4(color, 1.0);
 }
