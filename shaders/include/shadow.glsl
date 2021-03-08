@@ -27,18 +27,18 @@ float sampleShadowMap(in sampler2DShadow shadowMap, in vec3 shadowCoord) {
 	float texelSize = 1.0 / shadowMapResolution;
 	vec2 texelCoord = shadowCoord.xy * shadowMapResolution + 0.5;
 
-    vec2 center = floor(texelCoord) * texelSize;
+	vec2 center = floor(texelCoord) * texelSize;
 	vec2 f = fract(texelCoord);
 
 	vec2 offset = vec2(0.0, texelSize);
 
-    float bl = shadow2D(shadowMap, vec3(center + offset.xx, shadowCoord.z)).x;
-    float tl = shadow2D(shadowMap, vec3(center + offset.xy, shadowCoord.z)).x;
-    float br = shadow2D(shadowMap, vec3(center + offset.yx, shadowCoord.z)).x;
-    float tr = shadow2D(shadowMap, vec3(center + offset.yy, shadowCoord.z)).x;
+	float bl = shadow2D(shadowMap, vec3(center + offset.xx, shadowCoord.z)).x;
+	float tl = shadow2D(shadowMap, vec3(center + offset.xy, shadowCoord.z)).x;
+	float br = shadow2D(shadowMap, vec3(center + offset.yx, shadowCoord.z)).x;
+	float tr = shadow2D(shadowMap, vec3(center + offset.yy, shadowCoord.z)).x;
 
-    float l = mix(bl, tl, f.y);
-    float r = mix(br, tr, f.y);
+	float l = mix(bl, tl, f.y);
+	float r = mix(br, tr, f.y);
 	return mix(l, r, f.x);
 #else
 	return shadow2D(shadowMap, shadowCoord).x;

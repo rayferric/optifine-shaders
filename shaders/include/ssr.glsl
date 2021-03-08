@@ -90,7 +90,7 @@ vec3 computeSSReflection(in sampler2D colorTex, in sampler2D depthTex, in vec3 f
 	vec3 coord = rayMarch(depthTex, fragPos, jitt);
 
 	vec2 dCoord = smoothstep(0.75, 1.0, abs(coord.xy * 2.0 - 1.0));
-    float screenEdgeFactor = clamp(1.0 - (dCoord.x + dCoord.y), 0.0, 1.0);
+	float screenEdgeFactor = clamp(1.0 - (dCoord.x + dCoord.y), 0.0, 1.0);
 	
 	vec3 fallback = getSkyEnergy(dir) * skyFactor;
 	return mix(fallback, texture2D(colorTex, coord.xy).xyz, coord.z * screenEdgeFactor);
@@ -117,7 +117,7 @@ vec3 computeSSRefraction(in sampler2D colorTex, in sampler2D depthTex, in vec3 f
 	vec3 coord = rayMarch(depthTex, fragPos, jitt);
 
 	vec2 dCoord = smoothstep(0.75, 1.0, abs(coord.xy * 2.0 - 1.0));
-    float screenEdgeFactor = clamp(1.0 - (dCoord.x + dCoord.y), 0.0, 1.0);
+	float screenEdgeFactor = clamp(1.0 - (dCoord.x + dCoord.y), 0.0, 1.0);
 	
 	vec3 fallback = getSkyEnergy(dir) * skyFactor;
 	return mix(fallback, texture2D(colorTex, coord.xy).xyz, coord.z);

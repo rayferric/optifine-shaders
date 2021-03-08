@@ -47,7 +47,7 @@ vec2 raySphereIntersect(in vec3 origin, in vec3 dir, in float radius) {
 	float b = 2.0 * dot(dir, origin);
 	float c = dot(origin, origin) - (radius * radius);
 	float d = (b * b) - 4.0 * a * c;
-    
+	
 	if(d < 0.0)return vec2(1.0, -1.0);
 	return vec2(
 		(-b - sqrt(d)) / (2.0 * a),
@@ -63,7 +63,7 @@ vec2 raySphereIntersect(in vec3 origin, in vec3 dir, in float radius) {
  * @return    Rayleigh phase function value
  */
 float phaseR(in float cosTheta) {
-    return (3.0 * (1.0 + cosTheta * cosTheta)) / (16.0 * PI);
+	return (3.0 * (1.0 + cosTheta * cosTheta)) / (16.0 * PI);
 }
 
 /**
@@ -91,8 +91,8 @@ vec3 avgDensities(in vec3 pos) {
 	vec3 density;
 	density.x = exp(-height / SKY_RAYLEIGH_HEIGHT);
 	density.y = exp(-height / SKY_MIE_HEIGHT);
-    density.z = (1.0 / cosh((SKY_OZONE_PEAK_LEVEL - height) / SKY_OZONE_FALLOFF)) * density.x; // Ozone absorption scales with rayleigh
-    return density;
+	density.z = (1.0 / cosh((SKY_OZONE_PEAK_LEVEL - height) / SKY_OZONE_FALLOFF)) * density.x; // Ozone absorption scales with rayleigh
+	return density;
 }
 
 /**
@@ -110,60 +110,60 @@ vec3 atmosphere(
 	in vec3 lightDir
 ) {
 	// Intersect the atmosphere
-    vec2 intersect = raySphereIntersect(pos, dir, ATMOSPHERE_RADIUS);
+	vec2 intersect = raySphereIntersect(pos, dir, ATMOSPHERE_RADIUS);
 
 	// Accumulators
 	vec3 opticalDepth = vec3(0.0); // Accumulated density of particles participating in Rayleigh, Mie and ozone scattering respectively
-    vec3 sumR = vec3(0.0);
-    vec3 sumM = vec3(0.0);
-    
-    // Here's the trick - we clamp the sampling length to keep precision at the horizon
-    // This introduces banding, but we can compensate for that by scaling the clamp according to horizon angle
-    float rayPos = max(0.0, intersect.x);
-    float maxLen = SKY_ATMOSPHERE_HEIGHT;
-    maxLen *= (1.0 - abs(dir.y) * 0.5);
+	vec3 sumR = vec3(0.0);
+	vec3 sumM = vec3(0.0);
+	
+	// Here's the trick - we clamp the sampling length to keep precision at the horizon
+	// This introduces banding, but we can compensate for that by scaling the clamp according to horizon angle
+	float rayPos = max(0.0, intersect.x);
+	float maxLen = SKY_ATMOSPHERE_HEIGHT;
+	maxLen *= (1.0 - abs(dir.y) * 0.5);
 	float stepSize = min(intersect.y - rayPos, maxLen) / float(SKY_SAMPLES);
-    rayPos += stepSize * 0.5; // Let's sample in the center
-    
-    for(int i = 0; i < SKY_SAMPLES; i++) {
-        vec3 samplePos = pos + dir * rayPos; // Current sampling position
+	rayPos += stepSize * 0.5; // Let's sample in the center
+	
+	for(int i = 0; i < SKY_SAMPLES; i++) {
+		vec3 samplePos = pos + dir * rayPos; // Current sampling position
 
 		// Similar to the primary iteration
 		vec2 lightIntersect = raySphereIntersect(samplePos, lightDir, ATMOSPHERE_RADIUS); // No need to check if intersection happened as we already are inside the sphere
 
-        vec3 lightOpticalDepth = vec3(0.0);
-        
-        // We're inside the sphere now, hence we don't have to clamp ray pos
-        float lightStep = lightIntersect.y / float(SKY_LIGHT_SAMPLES);
-        float lightRayPos = lightStep * 0.5; // Let's sample in the center
-        
-        for(int j = 0; j < SKY_LIGHT_SAMPLES; j++) {
-            vec3 lightSamplePos = samplePos + lightDir * (lightRayPos);
+		vec3 lightOpticalDepth = vec3(0.0);
+
+		// We're inside the sphere now, hence we don't have to clamp ray pos
+		float lightStep = lightIntersect.y / float(SKY_LIGHT_SAMPLES);
+		float lightRayPos = lightStep * 0.5; // Let's sample in the center
+
+		for(int j = 0; j < SKY_LIGHT_SAMPLES; j++) {
+			vec3 lightSamplePos = samplePos + lightDir * (lightRayPos);
 
 			lightOpticalDepth += avgDensities(lightSamplePos) * lightStep;
 
-            lightRayPos += lightStep;
-        }
+			lightRayPos += lightStep;
+		}
 
 		// Accumulate optical depth
 		vec3 densities = avgDensities(samplePos) * stepSize;
 		opticalDepth += densities;
 
 		// Accumulate scattered light
-        vec3 scattered = exp(-(SKY_BETA_RAY * (opticalDepth.x + lightOpticalDepth.x) + SKY_BETA_MIE * (opticalDepth.y + lightOpticalDepth.y) + SKY_BETA_OZONE * (opticalDepth.z + lightOpticalDepth.z)));
-        sumR += scattered * densities.x;
-        sumM += scattered * densities.y;
+		vec3 scattered = exp(-(SKY_BETA_RAY * (opticalDepth.x + lightOpticalDepth.x) + SKY_BETA_MIE * (opticalDepth.y + lightOpticalDepth.y) + SKY_BETA_OZONE * (opticalDepth.z + lightOpticalDepth.z)));
+		sumR += scattered * densities.x;
+		sumM += scattered * densities.y;
 
-        rayPos += stepSize;
-    }
+		rayPos += stepSize;
+	}
 
-    float cosTheta = dot(dir, lightDir);
-    
-    return max(
-        phaseR(cosTheta)        * SKY_BETA_RAY * sumR + // Rayleigh color
-       	phaseM(cosTheta, SKY_G) * SKY_BETA_MIE * sumM,  // Mie color
-    	0.0
-    );
+	float cosTheta = dot(dir, lightDir);
+	
+	return max(
+		phaseR(cosTheta)        * SKY_BETA_RAY * sumR + // Rayleigh color
+	   	phaseM(cosTheta, SKY_G) * SKY_BETA_MIE * sumM,  // Mie color
+		0.0
+	);
 }
 
 /**
@@ -176,9 +176,9 @@ vec3 atmosphere(
  */
 float renderBlackbody(in vec3 dir, in vec3 lightDir) {
 	float cosSun = cos(radians(SUN_ANGULAR_RADIUS));
-    float cosTheta = dot(dir, lightDir);
+	float cosTheta = dot(dir, lightDir);
 
-    return step(cosSun, cosTheta);
+	return step(cosSun, cosTheta);
 }
 
 /**
@@ -189,7 +189,7 @@ float renderBlackbody(in vec3 dir, in vec3 lightDir) {
  * @return    daylight factor in range <0.0, 1.0>
  */
 float getDayFactor(in float sunHeight) {
-    return pow(smoothstep(-0.6, 0.6, sunHeight), 8.0);
+	return pow(smoothstep(-0.6, 0.6, sunHeight), 8.0);
 }
 
 /**
@@ -200,7 +200,7 @@ float getDayFactor(in float sunHeight) {
  * @return    shadow light illuminance
  */
 float getShadowIlluminance() {
-    return mix(MOON_ILLUMINANCE, SUN_ILLUMINANCE, getDayFactor(getSunHeight() - 0.2));
+	return mix(MOON_ILLUMINANCE, SUN_ILLUMINANCE, getDayFactor(getSunHeight() - 0.2));
 }
 
 float getShadowSwitchFactor() { // Hide shadows while switching

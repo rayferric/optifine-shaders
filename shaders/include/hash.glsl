@@ -10,9 +10,9 @@
  */
 float hash1(in vec3 value) {
 	value = fract(value * 0.1031);
-    value += dot(value, value.yzx + 33.33);
-    value *= sin(dot(value, vec3(9082.0, 87233.0, 132.0)));
-    return fract((value.x + value.y) * value.z);
+	value += dot(value, value.yzx + 33.33);
+	value *= sin(dot(value, vec3(9082.0, 87233.0, 132.0)));
+	return fract((value.x + value.y) * value.z);
 }
 
 /**
@@ -24,8 +24,8 @@ float hash1(in vec3 value) {
  */
 vec3 hash3(vec3 value) {
 	value = fract(value * vec3(0.1031, 0.1030, 0.0973));
-    value += dot(value, value.yxz + 33.33);
-    return fract((value.xxy + value.yxx) * value.zyx);
+	value += dot(value, value.yxz + 33.33);
+	return fract((value.xxy + value.yxx) * value.zyx);
 }
 
 /**

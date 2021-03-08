@@ -106,22 +106,22 @@ vec3 getFragPos(in float depth, in vec2 coord) {
  * @return    RGB value
  */
 vec3 blackbody(const in float kelvin) {
-    float scaled = clamp(kelvin, 1000.0, 40000.0) * 0.01;
-    
-    vec3 rgb;
-    
-    if(scaled <= 66.0) {
-        rgb.x = 1.0;
-        rgb.y = 0.39008157876 * log(scaled) - 0.63184144378;
-    } else {
-        rgb.x = 1.29293618606 * pow(scaled - 60.0, -0.1332047592);
-        rgb.y = 1.1298908609 * pow(scaled - 60.0, -0.0755148492);
+	float scaled = clamp(kelvin, 1000.0, 40000.0) * 0.01;
+	
+	vec3 rgb;
+	
+	if(scaled <= 66.0) {
+		rgb.x = 1.0;
+		rgb.y = 0.39008157876 * log(scaled) - 0.63184144378;
+	} else {
+		rgb.x = 1.29293618606 * pow(scaled - 60.0, -0.1332047592);
+		rgb.y = 1.1298908609 * pow(scaled - 60.0, -0.0755148492);
 	}
-    
-    if(scaled >= 66.0)rgb.z = 1.0;
-    else if(scaled <= 19.0)rgb.z = 0.0;
-    else rgb.z = 0.54320678911 * log(scaled - 10.0) - 1.19625408914;
-    
+	
+	if(scaled >= 66.0)rgb.z = 1.0;
+	else if(scaled <= 19.0)rgb.z = 0.0;
+	else rgb.z = 0.54320678911 * log(scaled - 10.0) - 1.19625408914;
+	
 	return clamp(rgb, 0.0, 1.0);
 }
 

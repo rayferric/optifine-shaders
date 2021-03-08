@@ -29,7 +29,7 @@ vec3 linearToGamma(in vec3 color) {
  * @return    two-component vector value
  */
 vec2 encodeNormal(in vec3 normal) {
-    return normal.xy / sqrt(normal.z * 8.0 + 8.0) + 0.5;
+	return normal.xy / sqrt(normal.z * 8.0 + 8.0) + 0.5;
 }
 
 /**
@@ -42,8 +42,8 @@ vec2 encodeNormal(in vec3 normal) {
  */
 vec3 decodeNormal(in vec2 value) {
 	vec2 fv = value * 4.0 - 2.0;
-    float f = dot(fv, fv);
-    return vec3(fv * sqrt(1.0 - f * 0.25), 1.0 - f * 0.5);
+	float f = dot(fv, fv);
+	return vec3(fv * sqrt(1.0 - f * 0.25), 1.0 - f * 0.5);
 }
 
 /**
@@ -54,9 +54,9 @@ vec3 decodeNormal(in vec2 value) {
  * @return    floating-point value in range <0.0, 1.0>
  */
 float encodeRGB8(in vec3 rgb) {
-    ivec3 irgb = ivec3(rgb * 255.0 + 0.5);
+	ivec3 irgb = ivec3(rgb * 255.0 + 0.5);
 	int i = (irgb.x << 16) | (irgb.y << 8) | irgb.z;
-    return float(i) / 16777215.0; // / (2 ^ 24 - 1)
+	return float(i) / 16777215.0; // / (2 ^ 24 - 1)
 }
 
 /**
@@ -67,14 +67,14 @@ float encodeRGB8(in vec3 rgb) {
  * @return    three-component vector in range <0.0, 1.0> on all axes
  */
 vec3 decodeRGB8(in float value) {
-    int i = int(value * 16777215.0 + 0.5);
+	int i = int(value * 16777215.0 + 0.5);
 	i = clamp(i - 2, 0, 0xFFFFFF); // Just to make sure there are no precision errors
-    
-    int r = i >> 16;
-    int g = (i >> 8) & 0xFF;
-    int b = i & 0xFF;
-    
-    return clamp(vec3(r, g, b) / 255.0, 0.0, 1.0);
+	
+	int r = i >> 16;
+	int g = (i >> 8) & 0xFF;
+	int b = i & 0xFF;
+	
+	return clamp(vec3(r, g, b) / 255.0, 0.0, 1.0);
 }
 
 float encodeVec2(in vec2 vector) {

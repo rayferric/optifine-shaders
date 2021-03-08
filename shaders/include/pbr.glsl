@@ -3,7 +3,7 @@
 
 // Fresnel function: Schlick
 vec3 fresnelSchlick(float cosTheta, vec3 F0) {
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
 // Fresnel function accounting for roughness: Schlick
@@ -13,27 +13,27 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
 
 // Fresnel strength function: Schlick
 float fresnelSchlickStrength(float cosTheta, float F0) {
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
 // Normal distribution function: GGX (Towbridge-Reitz) 
 float distributionGGX(float NdotH, float roughness) {
-    float a  = roughness * roughness;
-    float a2 = a * a;
+	float a  = roughness * roughness;
+	float a2 = a * a;
 	
-    float d = (NdotH * NdotH) * (a2 - 1.0) + 1.0;
-    return a2 / (PI * d * d);
+	float d = (NdotH * NdotH) * (a2 - 1.0) + 1.0;
+	return a2 / (PI * d * d);
 }
 
 // Single term for the Smith (Schlick-GGX) equation below.
 float geometrySmithG1(float cosTheta, float k) {
-    return cosTheta / (cosTheta * (1.0 - k) + k);
+	return cosTheta / (cosTheta * (1.0 - k) + k);
 }
 
 // Geometric shadowing approximation function: Smith (Schlick-GGX).
 float geometrySmith(float NdotV, float NdotL, float roughness) {
 	float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
+	float k = (r * r) / 8.0;
 	return geometrySmithG1(NdotV, k) * geometrySmithG1(NdotL, k);
 }
 
