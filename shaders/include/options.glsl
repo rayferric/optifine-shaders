@@ -28,20 +28,18 @@ const float shadowDistanceRenderMul = 1.0;   // Required to work with shadowDist
 const bool 	shadowHardwareFiltering = true;  // Must be enabled in order to use shadow2D()
 const float	sunPathRotation	        = -45.0; // The sun indicates south at noon
 const float eyeBrightnessHalflife   = 1.0;   // Eye adaptation speed in seconds
+const float ambientOcclusionLevel   = 0.0;
 
-#define SHADOW_MAP_DISTORTION_STRENGTH 0.8  // Defines precision gain at the center of the shadow map in range (0.0, 1.0)
-#define SHADOW_MAP_DISTORTION_STRETCH  12.0 // How much the distorted shadow map is stretched to a rectangular shape [1.0 - inf)
+#define MIN_EXPOSURE  -16.0 // Lowest exposure value reachable by the camera in EV
+#define MAX_EXPOSURE  0.0   // Highest exposure value reachable by the camera in EV
 
 #define SUN_ILLUMINANCE      128000.0 // 128000.0 -> https://en.wikipedia.org/wiki/Sunlight#Intensity_in_the_Solar_System
 #define MOON_ILLUMINANCE     0.32     // 0.32 -> https://en.wikipedia.org/wiki/Moonlight#Illumination
 #define TORCH_ILLUMINANCE    8.0
 #define EMISSION_ILLUMINANCE 1.0
 
-#define MIN_EXPOSURE  -16.0 // Lowest exposure value reachable by the camera in EV
-#define MAX_EXPOSURE  0.0   // Highest exposure value reachable by the camera in EV
-
-vec3 sunColor   = blackbody(SUN_TEMPERATURE)   * SUN_ILLUMINANCE;
-vec3 moonColor  = blackbody(MOON_TEMPERATURE)  * MOON_ILLUMINANCE;
-vec3 torchColor = blackbody(TORCH_TEMPERATURE) * TORCH_ILLUMINANCE;
+#define SUN_ENERGY   (blackbody(SUN_TEMPERATURE)   * SUN_ILLUMINANCE)
+#define MOON_ENERGY  (blackbody(MOON_TEMPERATURE)  * MOON_ILLUMINANCE)
+#define TORCH_ENERGY (blackbody(TORCH_TEMPERATURE) * TORCH_ILLUMINANCE)
 
 #endif // OPTIONS_GLSL

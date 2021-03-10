@@ -2,25 +2,69 @@
 #define ENCODING_GLSL
 
 /**
- * Decodes linear color from sRGB.
+ * Converts value from gamma to linear space.
  *
- * @param color color in sRGB space
+ * @param value value in gamma space
  *
- * @return color in linear space
+ * @return value in linear space
  */
-vec3 gammaToLinear(in vec3 color) {
-	return pow(color, vec3(2.2));
+float gammaToLinear(in float value) {
+	return pow(value, 2.2);
 }
 
 /**
- * Encodes linear color to sRGB.
+ * Converts value from linear to gamma space.
  *
- * @param color color in linear space
+ * @param value value in linear space
  *
- * @return color in sRGB space
+ * @return value in gamma space
  */
-vec3 linearToGamma(in vec3 color) {
-	return pow(color, vec3(1.0 / 2.2));
+float linearToGamma(in float value) {
+	return pow(value, 1.0 / 2.2);
+}
+
+/**
+ * Converts value from gamma to linear space.
+ *
+ * @param value value in gamma space
+ *
+ * @return value in linear space
+ */
+vec2 gammaToLinear(in vec2 value) {
+	return pow(value, vec2(2.2));
+}
+
+/**
+ * Converts value from linear to gamma space.
+ *
+ * @param value value in linear space
+ *
+ * @return value in gamma space
+ */
+vec2 linearToGamma(in vec2 value) {
+	return pow(value, vec2(1.0 / 2.2));
+}
+
+/**
+ * Converts value from gamma to linear space.
+ *
+ * @param value value in gamma space
+ *
+ * @return value in linear space
+ */
+vec3 gammaToLinear(in vec3 value) {
+	return pow(value, vec3(2.2));
+}
+
+/**
+ * Converts value from linear to gamma space.
+ *
+ * @param value value in linear space
+ *
+ * @return value in gamma space
+ */
+vec3 linearToGamma(in vec3 value) {
+	return pow(value, vec3(1.0 / 2.2));
 }
 
 /**

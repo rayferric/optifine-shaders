@@ -1,19 +1,19 @@
 #ifndef HASH_GLSL
 #define HASH_GLSL
 
-#include "common.glsl"
-
 /**
- * Computes floating-point value by hashing another one.
+ * Computes floating-point value by hashing a three-component vector.
  *
- * @param value floating-point value to hash
+ * @param value three-component vector to hash
  *
  * @return floating-point value in range [0.0, 1.0)
  */
-float hash(in float value) {
-	vec3 vec = fract(value * 0.1031);
-	vec += dot(vec, vec.yzx + 19.19);
-	return fract((vec.x + vec.y) * vec.z);
+float hash(in vec3 value) {
+	value = fract(value * vec3(0.1031, 0.1030, 0.0973));
+    value += dot(value, value.yxz + 33.33);
+    value = fract((value.xxy + value.yxx)*value.zyx);
+	value += dot(value, value.yzx + 33.33);
+	return fract((value.x + value.y) * value.z);
 }
 
 /**
@@ -24,7 +24,7 @@ float hash(in float value) {
  *
  * @return normalized direction vector
  */
-vec3 hashSphereDir(in float value) {
+vec3 hashSphereDir(in vec3 value) {
 	vec2 hashed = vec2(hash(value), hash(value + 1.0));
 	float s = hashed.x * 2.0 * PI;
 	float t = hashed.y * 2.0 - 1.0;
@@ -40,7 +40,7 @@ vec3 hashSphereDir(in float value) {
  *
  * @return normalized direction vector
  */
-vec3 hashHemisphereDir(in float value, in vec3 normal) {
+vec3 hashHemisphereDir(in vec3 value, in vec3 normal) {
 	vec3 dir = hashSphereDir(value);
 	return dir * sign(dot(dir, normal));
 }
