@@ -1,47 +1,48 @@
 #ifndef HASH_GLSL
 #define HASH_GLSL
 
+#include "common.glsl"
+
 /**
- * Generates single number by hashing a three-component value.
+ * Computes floating-point value by hashing another one.
  *
- * @param value    three-component value to be hashed
+ * @param value floating-point value to hash
  *
- * @return    single number in range <0.0, 1.0]
+ * @return floating-point value in range [0.0, 1.0)
  */
-float hash1(in vec3 value) {
-	value = fract(value * 0.1031);
-	value += dot(value, value.yzx + 33.33);
-	value *= sin(dot(value, vec3(9082.0, 87233.0, 132.0)));
-	return fract((value.x + value.y) * value.z);
+float hash(in float value) {
+	vec3 vec = fract(value * 0.1031);
+	vec += dot(vec, vec.yzx + 19.19);
+	return fract((vec.x + vec.y) * vec.z);
 }
 
 /**
- * Generates three-component number by hashing a three-component value.
+ * Computes uniformly distributed random direction on unit sphere.
  *
- * @param value    three-component value to be hashed
+ * @param value  three-component value to hash
+ * @param normal hemisphere orientation
  *
- * @return    three-component number in range <0.0, 1.0] on all axes
+ * @return normalized direction vector
  */
-vec3 hash3(vec3 value) {
-	value = fract(value * vec3(0.1031, 0.1030, 0.0973));
-	value += dot(value, value.yxz + 33.33);
-	return fract((value.xxy + value.yxx) * value.zyx);
+vec3 hashSphereDir(in float value) {
+	vec2 hashed = vec2(hash(value), hash(value + 1.0));
+	float s = hashed.x * 2.0 * PI;
+	float t = hashed.y * 2.0 - 1.0;
+	return vec3(sin(s), cos(s), t) / sqrt(t * t + 1.0);
 }
 
 /**
- * Generates random direction in hemisphere oriented along normal.
+ * Computes uniformly distributed random direction
+ * on unit hemisphere oriented along normal.
  *
- * @param seed      three-component value to be hashed
- * @param normal    hemisphere orientation
+ * @param value  three-component value to hash
+ * @param normal hemisphere orientation
  *
- * @return    normalized direction
+ * @return normalized direction vector
  */
-vec3 hashDirInHemisphere(in vec3 seed, in vec3 normal) {
-	vec3 dir = hash3(seed);
-	dir = dir * 2.0 - 1.0;
-	dir = normalize(dir / cos(dir)); // Ensures uniform distribution
-
-	return dot(dir, normal) < 0.0 ? -dir : dir;
+vec3 hashHemisphereDir(in float value, in vec3 normal) {
+	vec3 dir = hashSphereDir(value);
+	return dir * sign(dot(dir, normal));
 }
 
 #endif // HASH_GLSL

@@ -1,23 +1,21 @@
 #version 120
-#include "include/common.glsl"
-#include "include/material.glsl"
 
-varying vec3 v_Entity;
+#include "include/common.glsl"
+#include "include/encoding.glsl"
+
 varying vec4 v_Color;
 varying vec2 v_TexCoord;
 
 uniform sampler2D texture;
 
 void main() {
-	vec4 albedoAlpha = texture2D(texture, v_TexCoord) * v_Color;
-	float alpha = albedoAlpha.w;
-	vec3 albedo = gammaToLinear(albedoAlpha.xyz);
-	albedo = remapEntityAlbedo(albedo, v_Entity);
+	vec4 albedoOpacity = texture2D(texture, v_TexCoord) * v_Color;
+	vec3 albedo = gammaToLinear(albedoOpacity.xyz);
+	float opacity = albedoOpacity.w;
 
-	float transmittance = remapEntityRMET(vec4(0.0, 0.0, 0.0, 1.0 - alpha), v_Entity).w;
-
-	gl_FragData[0].xyz = albedo * transmittance;
-	gl_FragData[0].w = alpha;
+	// shadowcolor0 (Shadow Color)
+	gl_FragData[0].xyz = albedo * (1.0 - opacity);
+	gl_FragData[0].w = opacity;
 }
 
 /* DRAWBUFFERS:0 */

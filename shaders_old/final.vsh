@@ -1,5 +1,4 @@
 #version 120
-
 #include "include/common.glsl"
 
 varying vec2 v_TexCoord;

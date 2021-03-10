@@ -1,12 +1,22 @@
+//
+// SSAO
+// Bloom
+// FXAA
+// TODO SSR quality profiles
+// Sky color
+// Use Shutter speed, F-Stops, ISO value to calculate DoF, exposure and motion blur at once
+
 #ifndef COMMON_GLSL
 #define COMMON_GLSL
 
 #extension GL_EXT_gpu_shader4 : enable
 
-#define PI       3.141593
+#define PI       3.14159265359
 #define EPSILON  0.001
 #define INFINITY 1e12
-#define E        2.718282
+#define E        2.71828182845904523536028747135266249775724709369995
+
+#include "framebuffer.glsl"
 
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferPreviousModelView;
@@ -36,22 +46,22 @@ uniform vec4 entityColor;
 
 /**
  * Returns the hyperbolic cosine of the parameter.
- * This function normally requires "#version 130" or later to be globally defined.
+ * This function requires "#version 130" or later to be globally defined.
  *
- * @param doubleArea twice the area of angle's hyperbolic sector
+ * @param x    value
  *
- * @return hyperbolic cosine of doubleArea
+ * @return    hyperbolic cosine of x
  */
-float cosh(in float doubleArea) {
-	return (pow(E, doubleArea) + pow(E, -doubleArea)) * 0.5;
+float cosh(in float x) {
+	return (pow(E, x) + pow(E, -x)) * 0.5;
 }
 
 /**
- * Converts color to perceptual grayscale value.
+ * Converts RGB color to a perceptual grayscale value.
  *
- * @param color color
+ * @param color    RGB value
  *
- * @return grayscale value
+ * @return    grayscale value
  */
 float luma(in vec3 color) {
 	return dot(color, vec3(0.299, 0.587, 0.114));
@@ -60,12 +70,13 @@ float luma(in vec3 color) {
 /**
  * Computes fragment position in view space.
  *
- * @param depth fragment depth in range [0.0, 1.0]
- * @param coord UV coordinate in range [0.0, 1.0] on both axes
+ * @param depthTex    depth buffer to be sampled
+ * @param coord       UV coordinate in range [0.0, 1.0] on both axes
  *
- * @return fragment position in view space
+ * @return    fragment position in view space
  */
-vec3 getFragPos(in float depth, in vec2 coord) {
+vec3 getFragPos(in sampler2D depthTex, in vec2 coord) {
+	float depth = texture2D(depthTex, coord).x;
 	vec4 pos = gbufferProjectionInverse * (vec4(coord.x, coord.y, depth, 1.0f) * 2.0 - 1.0);
 	pos /= pos.w;
 	return pos.xyz;
@@ -74,26 +85,27 @@ vec3 getFragPos(in float depth, in vec2 coord) {
 /**
  * Computes fragment position in view space.
  *
- * @param depthTex depth buffer to sample
+ * @param depth    normalized depth
  * @param coord    UV coordinate in range [0.0, 1.0] on both axes
  *
- * @return fragment position in view space
+ * @return    fragment position in view space
  */
-vec3 getFragPos(in sampler2D depthTex, in vec2 coord) {
-	float depth = texture2D(depthTex, coord).x;
-	return getFragPos(depth, coord);
+vec3 getFragPos(in float depth, in vec2 coord) {
+	vec4 pos = gbufferProjectionInverse * (vec4(coord.x, coord.y, depth, 1.0f) * 2.0 - 1.0);
+	pos /= pos.w;
+	return pos.xyz;
 }
 
 /**
- * Approximates RGB tint value of given color temperature in kelvin.
+ * Approximates RGB tint value of given color temperature in Kelvin.
  * Ported from the original algorithm by Tanner Helland.
  * https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html
  *
- * @param kelvin temperature in kelvin from 1000 up to 40000
+ * @param kelvin    temperature in Kelvin from 1000 up to 40000
  *
- * @return RGB tint value
+ * @return    RGB value
  */
-vec3 blackbody(in float kelvin) {
+vec3 blackbody(const in float kelvin) {
 	float scaled = clamp(kelvin, 1000.0, 40000.0) * 0.01;
 	
 	vec3 rgb;
@@ -106,32 +118,14 @@ vec3 blackbody(in float kelvin) {
 		rgb.y = 1.1298908609 * pow(scaled - 60.0, -0.0755148492);
 	}
 	
-	if (scaled >= 66.0) rgb.z = 1.0;
-	else if (scaled <= 19.0) rgb.z = 0.0;
+	if(scaled >= 66.0)rgb.z = 1.0;
+	else if(scaled <= 19.0)rgb.z = 0.0;
 	else rgb.z = 0.54320678911 * log(scaled - 10.0) - 1.19625408914;
 	
 	return clamp(rgb, 0.0, 1.0);
 }
 
-/**
- * Transforms HDR color to LDR using ACES operator.
- * Ported from original source:
- * https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve
- *
- * @param color HDR color
- *
- * @return LDR color
- */
-vec3 tonemapACES(in vec3 color) {
-	const float a = 2.51;
-	const float b = 0.03;
-	const float c = 2.43;
-	const float d = 0.59;
-	const float e = 0.14;
-	return clamp((color * (a * color + b)) / (color * (c * color + d) + e), 0.0, 1.0);
-}
-
-#include "framebuffer.glsl"
+#include "encoding.glsl"
 #include "options.glsl"
 
 #endif // COMMON_GLSL
