@@ -13,7 +13,7 @@ uniform sampler2D texture;
 void main() {
 	vec4 albedoOpacity = texture2D(texture, v_TexCoord) * v_Color;
 	albedoOpacity.xyz = gammaToLinear(albedoOpacity.xyz);
-	albedoOpacity = remapEntityAlbedoOpacity(albedoOpacity, v_Entity);
+	albedoOpacity = remapBlockAlbedoOpacity(albedoOpacity, v_Entity);
 	vec3 albedo = albedoOpacity.xyz;
 	float opacity = albedoOpacity.w;
 

@@ -50,6 +50,16 @@ const int shadowMapResolution = 2048; // [512 1024 2048 3072 4096]
 #define   TORCH_FALLOFF         8.0   // [4.0 6.0 8.0 12.0 16.0]
 #define   SKY_FALLOFF           8.0   // [1.0 2.0 4.0 6.0 8.0 12.0 16.0]
 
+// Waving
+#define WAVING_STRENGTH // [0.0 0.5 1.0 1.5 2.0]
+#define WAVING_LEAVES
+#define WAVING_WATER
+#define WAVING_LAVA
+#define WAVING_SINGLE_PLANTS
+#define WAVING_MULTI_PLANTS
+#define WAVING_FIRE
+#define WAVING_COBWEBS
+
 // Non-Adjustable Options
 
 const float shadowDistance          = 120.0; // 120.0 is the sweet spot

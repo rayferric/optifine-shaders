@@ -4,29 +4,61 @@
 #include "common.glsl"
 #include "hash.glsl"
 
-vec3 wave(in vec3 phase, in float freq) {
-	vec3 phaseHash = vec3(hash(phase.xyz), hash(phase.yzx), hash(phase.zxy));
-    return sin(2.0 * PI * (phaseHash + frameTimeCounter * freq));
+vec3 wave(in vec3 phaseSeed, in float freq) {
+	vec3 phase = vec3(hash(phaseSeed.xyz), hash(phaseSeed.yzx), hash(phaseSeed.zxy));
+    return sin(2.0 * PI * (phase + frameTimeCounter * freq));
 }
 
-vec3 waveWater(in vec3 pos) {
+vec3 waveBlock(in vec3 pos, in vec3 entity, in bool isTopVertex) {
 	// Waves with same phase, but slightly different frequency will
 	// periodically interfere making the movement more plausible.
-	float offset = 0.0;
-	offset += wave(pos + 0.0, 0.5).y * 0.01;
-	offset += wave(pos + 1.0, 1.0).y * 0.01;
-	offset += wave(pos + 1.0, 1.1).y * 0.01;
-	return pos + vec3(0.0, offset, 0.0);
-}
 
-vec3 waveLeaves(in vec3 pos) {
-	// Waves with same phase, but slightly different frequency will
-	// periodically interfere making the movement more plausible.
 	vec3 offset = vec3(0.0);
-	offset += wave(pos + 0.0, 0.5) * 0.005;
-	offset += wave(pos + 1.0, 1.0) * 0.005;
-	offset += wave(pos + 1.0, 1.1) * 0.005;
-	return pos + offset;
+
+#define WAVING_LEAVES
+#define WAVING_WATER
+#define WAVING_LAVA
+#define WAVING_SINGLE_PLANTS
+#define WAVING_MULTI_PLANTS
+#define WAVING_FIRE
+#define WAVING_COBWEBS
+
+#if WAVING_LEAVES
+	if (isLeaves(entity)) {
+		offset += wave(pos + 0.0, 0.5) * 0.005;
+		offset += wave(pos + 1.0, 1.0) * 0.005;
+		offset += wave(pos + 1.0, 1.1) * 0.005;
+	}
+#endif
+
+#if WAVING_PLANTS
+	if (isLeaves(entity) || isMultiPlant(entity)) {
+		offset += wave(pos + 0.0, 0.5) * 0.005;
+		offset += wave(pos + 1.0, 1.0) * 0.005;
+		offset += wave(pos + 1.0, 1.1) * 0.005;
+	}
+#endif
+
+	if (isWater(entity)) {
+		offset.y += wave(pos + 0.0, 0.5).y * 0.01;
+		offset.y += wave(pos + 1.0, 1.0).y * 0.01;
+		offset.y += wave(pos + 1.0, 1.1).y * 0.01;
+	} else if (isLava(entity)) {
+		offset.y += wave(pos + 0.0, 0.5).y * 0.01;
+		offset.y += wave(pos + 1.0, 0.5).y * 0.01;
+		offset.y += wave(pos + 1.0, 0.6).y * 0.01;
+	} else 
+	// } else if (isSinglePlant(entity) && isTopVertex) {
+	// 	offset += wave(pos + 0.0, 0.5) * 0.005;
+	// 	offset += wave(pos + 1.0, 1.0) * 0.005;
+	// 	offset += wave(pos + 1.0, 1.1) * 0.005;
+	} else if (isSinglePlant(entity) && isTopVertex) {
+		offset += wave(pos + 0.0, 0.5) * 0.03;
+		offset += wave(pos + 1.0, 1.0) * 0.01;
+		offset += wave(pos + 1.0, 1.1) * 0.01;
+	}
+
+	return pos + (offset * WAVING_STRENGTH);
 }
 
 // vec3 calcMove(in vec3 pos, float f0, float f1, float f2, float f3, float f4, float f5, vec3 amp1, vec3 amp2) {

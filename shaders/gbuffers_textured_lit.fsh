@@ -26,7 +26,7 @@ uniform sampler2D       shadowcolor0;
 void main() {
 	vec4 albedoOpacity = texture2D(texture, v_TexCoord) * v_Color;
 	albedoOpacity.xyz = gammaToLinear(albedoOpacity.xyz);
-	albedoOpacity = remapEntityAlbedoOpacity(albedoOpacity, v_Entity);
+	albedoOpacity = remapBlockAlbedoOpacity(albedoOpacity, v_Entity);
 	vec3 albedo = albedoOpacity.xyz;
 	float opacity = albedoOpacity.w;
 
@@ -34,7 +34,7 @@ void main() {
 	vec3 RME = texture2D(specular, v_TexCoord).xyz;
 	// Convert perceptual smoothness to roughness
 	RME.x = pow(1.0 - RME.x, 2.0);
-	RME = remapEntityRME(RME, v_Entity);
+	RME = remapBlockRME(RME, v_Entity);
 	float roughness = RME.x;
 	float metallic  = RME.y;
 	float emission  = RME.z;

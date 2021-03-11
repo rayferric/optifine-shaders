@@ -7,6 +7,7 @@
 
 attribute vec3 mc_Entity;
 attribute vec4 at_tangent;
+attribute vec2 mc_midTexCoord;
 
 varying vec4 v_Color;
 varying vec3 v_Entity;
@@ -37,12 +38,7 @@ void main() {
 		tangent.z, binormal.z, v_Normal.z
 	);
 
-	vec3 vertexPos = gl_Vertex.xyz;
-	if (isWater(mc_Entity))
-		vertexPos = waveWater(vertexPos);
-	else if (mc_Entity.x == 18 || mc_Entity.x == 31)
-		vertexPos = waveLeaves(vertexPos);
-	v_FragPos = (gl_ModelViewMatrix * vec4(vertexPos, 1.0)).xyz;
+	v_FragPos = (gl_ModelViewMatrix * vec4(waveBlock(gl_Vertex.xyz, mc_Entity, mc_midTexCoord.y > gl_MultiTexCoord0.y), 1.0)).xyz;
 	float cosTheta = dot(v_Normal, normalize(shadowLightPosition));
 	v_ShadowCoord = getShadowCoord(v_FragPos, cosTheta);
 
