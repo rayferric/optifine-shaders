@@ -1,7 +1,9 @@
 #version 120
 
 #include "include/common.glsl"
+#include "include/material.glsl"
 #include "include/shadow.glsl"
+#include "include/wave.glsl"
 
 attribute vec3 mc_Entity;
 attribute vec4 at_tangent;
@@ -35,7 +37,12 @@ void main() {
 		tangent.z, binormal.z, v_Normal.z
 	);
 
-	v_FragPos = (gl_ModelViewMatrix * gl_Vertex).xyz;
+	vec3 vertexPos = gl_Vertex.xyz;
+	if (isWater(mc_Entity))
+		vertexPos = waveWater(vertexPos);
+	else if (mc_Entity.x == 18 || mc_Entity.x == 31)
+		vertexPos = waveLeaves(vertexPos);
+	v_FragPos = (gl_ModelViewMatrix * vec4(vertexPos, 1.0)).xyz;
 	float cosTheta = dot(v_Normal, normalize(shadowLightPosition));
 	v_ShadowCoord = getShadowCoord(v_FragPos, cosTheta);
 

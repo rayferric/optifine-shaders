@@ -2,8 +2,8 @@
 #define SSAO_GLSL
 
 #define SSAO_SAMPLES  8
-#define SSAO_RADIUS   0.35
-#define SSAO_STRENGTH 2.0
+#define SSAO_RADIUS   0.25
+#define SSAO_STRENGTH 1.5
 
 float computeSSAO(in vec3 fragPos, in vec3 normal, in sampler2D depthTex) {
 	float aoStrength = 0.0;

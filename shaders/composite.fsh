@@ -71,6 +71,8 @@ void main() {
 
 	hdr *= computeSSAO(fragPos, N, depthtex0);
 
+	hdr = mix(texture2D(colortex0, v_TexCoord).xyz * albedo, hdr, opacity);
+
 	// colortex0 (HDR)
 	gl_FragData[0].xyz = hdr;
 	gl_FragData[0].w   = 1.0;

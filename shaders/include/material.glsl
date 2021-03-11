@@ -179,7 +179,7 @@ vec3 remapEntityRME(in vec3 RME, in vec3 entity) {
 	if(isWater(entity)) {
 		RME = vec3(0.0, 1.0, 0.0);
 	} else if(isStainedGlass(entity)) {
-		RME.x = 0;
+		RME.xy = vec2(0.0, 1.0);
 	} else if(id == 41 || id == 42 || id == 57 || id == 133) {
 		// Blocks of: Gold, Iron, Diamond, Emerald
 		RME.x = min(RME.x, 0.6);
