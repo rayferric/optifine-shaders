@@ -1,5 +1,6 @@
 screen.POST_PROCESSING=Post-Processing
 screen.LIGHTING_AND_SHADOWS=Lighting & Shadows
+screen.WAVING=Waving
 
 option.EXPOSURE=Exposure
 option.EXPOSURE.comment=Exposure correction. Higher values give brighter image. No performance impact.
@@ -26,3 +27,20 @@ option.TORCH_FALLOFF=Torchlight Falloff
 option.TORCH_FALLOFF.comment=Falloff exponent of light emitted by torches. Higher values give smaller light radius. No performance impact.
 option.SKY_FALLOFF=Sky Energy Falloff
 option.SKY_FALLOFF.comment=Falloff exponent of sky contribution. Higher values make sky energy less influential in interior areas. No performance impact.
+
+option.WAVING_AMPLITUDE=Amplitude
+option.WAVING_AMPLITUDE.comment=Aplitude scale of wave displacement. Higher values make waving more appearent. No performance impact.
+option.WAVING_FREQUENCY=Frequency
+option.WAVING_FREQUENCY.comment=Frequency scale of wave displacement. Higher values make waving faster. No performance impact.
+option.WAVING_WATER=Waving Water
+option.WAVING_WATER.comment=Water wave displacement. Low performance impact.
+option.WAVING_LAVA=Waving Lava
+option.WAVING_LAVA.comment=Lava wave displacement. Low performance impact.
+option.WAVING_LEAVES=Waving Leaves
+option.WAVING_LEAVES.comment=Leaves wave displacement. Low performance impact.
+option.WAVING_FIRE=Waving Fire
+option.WAVING_FIRE.comment=Fire wave displacement. Low performance impact.
+option.WAVING_SINGLE_PLANTS=Waving Single-Plants
+option.WAVING_SINGLE_PLANTS.comment=Single-block plants wave displacement. Low performance impact.
+option.WAVING_MULTI_PLANTS=Waving Multi-Plants
+option.WAVING_MULTI_PLANTS.comment=Multi-block plants wave displacement. Low performance impact.

@@ -38,7 +38,8 @@ void main() {
 		tangent.z, binormal.z, v_Normal.z
 	);
 
-	v_FragPos = (gl_ModelViewMatrix * vec4(waveBlock(gl_Vertex.xyz, mc_Entity, mc_midTexCoord.y > gl_MultiTexCoord0.y), 1.0)).xyz;
+	vec3 vertexPos = waveBlock(gl_Vertex.xyz, mc_Entity, mc_midTexCoord.y > gl_MultiTexCoord0.y);
+	v_FragPos = (gl_ModelViewMatrix * vec4(vertexPos, 1.0)).xyz;
 	float cosTheta = dot(v_Normal, normalize(shadowLightPosition));
 	v_ShadowCoord = getShadowCoord(v_FragPos, cosTheta);
 
