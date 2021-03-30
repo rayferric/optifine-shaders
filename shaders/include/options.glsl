@@ -49,10 +49,12 @@ const int shadowMapResolution = 2048; // [512 1024 2048 3072 4096]
 #define   TORCH_TEMPERATURE     2300  // [1700 2000 2300 2600 2900]
 #define   TORCH_FALLOFF         8.0   // [4.0 6.0 8.0 12.0 16.0]
 #define   SKY_FALLOFF           8.0   // [1.0 2.0 4.0 6.0 8.0 12.0 16.0]
+#define   SSAO_SAMPLES          8     // [0 4 8 16] // TODO: Hardcode once TAA is implemented
+#define   SSAO_EXPONENT         1.5   // [0.5 1.0 1.5 2.0 2.5]
 
 // Waving
-#define WAVING_AMPLITUDE 1.0 // [0.0 0.5 1.0 2.0 4.0]
-#define WAVING_FREQUENCY 1.0 // [0.0 0.5 1.0 1.5 2.0]
+#define WAVING_AMPLITUDE 1.0 // [0.5 0.75 1.0 1.5 2.0]
+#define WAVING_FREQUENCY 1.0 // [0.5 0.75 1.0 1.5 2.0]
 #define WAVING_WATER
 #define WAVING_LAVA
 #define WAVING_LEAVES
@@ -64,10 +66,10 @@ const int shadowMapResolution = 2048; // [512 1024 2048 3072 4096]
 
 const float shadowDistance          = 120.0; // 120.0 is the sweet spot
 const float shadowDistanceRenderMul = 1.0;   // Required to work with shadowDistance
-const bool 	shadowHardwareFiltering = true;  // Must be enabled in order to use shadow2D()
+const bool 	shadowHardwareFiltering = false;  // Must be enabled in order to use shadow2D()
 const float	sunPathRotation	        = -45.0; // The sun indicates south at noon
 const float eyeBrightnessHalflife   = 1.0;   // Eye adaptation speed in seconds
-const float ambientOcclusionLevel   = 0.0;
+const float ambientOcclusionLevel   = 1.0;
 
 #define MIN_EXPOSURE  -16.0 // Lowest exposure value reachable by the camera in EV
 #define MAX_EXPOSURE  0.0   // Highest exposure value reachable by the camera in EV

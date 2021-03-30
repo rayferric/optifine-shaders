@@ -1,17 +1,20 @@
 #ifndef SSAO_GLSL
 #define SSAO_GLSL
 
-#define SSAO_SAMPLES  8
-#define SSAO_RADIUS   0.25
-#define SSAO_STRENGTH 1.5
+#include "hash.glsl"
+
+#define SSAO_RADIUS 0.25
 
 float computeSSAO(in vec3 fragPos, in vec3 normal, in sampler2D depthTex) {
+#if SSAO_SAMPLES == 0
+	return 1.0;
+#endif
+
 	float aoStrength = 0.0;
 
 	for (int i = 0; i < SSAO_SAMPLES; i++) {
-		vec3 samplePos = fragPos + hashHemisphereDir(frameTimeCounter * fragPos + float(i), normal) * SSAO_RADIUS;
-		vec4 proj = gbufferProjection * vec4(samplePos, 1.0);
-		vec2 coord = (proj.xy / proj.w) * 0.5 + 0.5;
+		vec3 samplePos = fragPos + hashHemisphereDir(frameTimeCounter * fragPos + float(i), normal) * SSAO_RADIUS * hash(fragPos * float(i));
+		vec2 coord = getScreenCoord(samplePos);
 		
 		float testDepth = -samplePos.z;
 		float realDepth = -getFragPos(depthTex, coord).z;
@@ -19,7 +22,7 @@ float computeSSAO(in vec3 fragPos, in vec3 normal, in sampler2D depthTex) {
 		aoStrength += float(realDepth < testDepth) * rangeFactor;
 	}
 
-	return pow(1.0 - (aoStrength / float(SSAO_SAMPLES)), SSAO_STRENGTH);
+	return pow(1.0 - (aoStrength / float(SSAO_SAMPLES)), SSAO_EXPONENT);
 }
 
 #endif // SSAO_GLSL
