@@ -17,10 +17,21 @@ float hash(in vec3 value) {
 }
 
 /**
+ * Computes uniformly distributed random direction on unit circle.
+ *
+ * @param value  three-component value to hash
+ *
+ * @return normalized direction vector
+ */
+vec2 hashCircleDir(in vec3 value) {
+	float angle = hash(value) * 2.0 * PI;
+	return vec2(cos(angle), sin(angle));
+}
+
+/**
  * Computes uniformly distributed random direction on unit sphere.
  *
  * @param value  three-component value to hash
- * @param normal hemisphere orientation
  *
  * @return normalized direction vector
  */

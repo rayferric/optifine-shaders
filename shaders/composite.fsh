@@ -1,7 +1,6 @@
 #version 120
 
 #include "include/common.glsl"
-#include "include/hash.glsl"
 #include "include/material.glsl"
 #include "include/pbr.glsl"
 #include "include/shadow.glsl"
@@ -15,8 +14,8 @@ uniform sampler2D       colortex2;
 uniform sampler2D       colortex3;
 uniform sampler2D       depthtex0;  // All entities
 uniform sampler2D       depthtex1;  // Opaque entities only
-uniform sampler2DShadow shadowtex0; // All entities
-uniform sampler2DShadow shadowtex1; // Opaque entities only
+uniform sampler2D shadowtex0; // All entities
+uniform sampler2D shadowtex1; // Opaque entities only
 uniform sampler2D       shadowcolor0;
 
 void main() {
@@ -52,8 +51,9 @@ void main() {
 		float NdotH = max(dot(N, H), 0.0);
 		float HdotV = max(dot(H, V), 0.0);
 
-		vec3 shadowCoord = getShadowCoord(fragPos, dot(N, L));
-		vec3 shadowFactor = getShadowColor(shadowtex0, shadowtex1, shadowcolor0, shadowCoord) * NdotL;
+		//vec3 shadowCoord = getShadowCoord(fragPos, dot(N, L));
+		//vec3 shadowFactor = getShadowColor(shadowtex0, shadowtex1, shadowcolor0, shadowCoord) * NdotL;
+		vec3 shadowFactor = vec3(getTemporalShadow(shadowtex0, fragPos));
 		vec3 shadowContribution = cookTorrance(albedo, roughness, metallic, NdotV, NdotL, NdotH, HdotV);
 		vec3 shadowEnergy = (SUN_ENERGY * shadowFactor) * shadowContribution;
 
@@ -68,8 +68,6 @@ void main() {
 	} else {
 		hdr = texture2D(colortex0, v_TexCoord).xyz;
 	}
-
-	hdr *= computeSSAO(fragPos, N, depthtex0);
 
 	hdr = mix(texture2D(colortex0, v_TexCoord).xyz * albedo, hdr, opacity);
 
