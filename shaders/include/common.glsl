@@ -103,41 +103,29 @@ float luma(in vec3 color) {
 }
 
 /**
- * Converts screen coordinates to three-dimensional view space position.
+ * Transforms position using supplied matrix and performs perspective division. 
  *
- * @param depth fragment depth in range [0.0, 1.0]
- * @param coord UV coordinate in range [0.0, 1.0] on both axes
+ * @param projMatrix projection matrix
+ * @param pos        source position
  *
- * @return fragment position in view space
+ * @return projected position after perspective division
  */
-vec3 getFragPos(in float depth, in vec2 coord) {
-	vec4 pos = gbufferProjectionInverse * (vec4(coord.xy, depth, 1.0) * 2.0 - 1.0);
-	return pos.xyz / pos.w;
+vec3 projPos(mat4 projMatrix, in vec3 pos) {
+	vec4 proj = projMatrix * vec4(pos, 1.0);
+	return proj.xyz / proj.w;
 }
 
 /**
- * Converts screen coordinates to three-dimensional view space position.
+ * Converts UV coordinates to three-dimensional fragment position.
  *
+ * @param coord    normalized UV coordinates
  * @param depthTex depth buffer to sample
- * @param coord    UV coordinate in range [0.0, 1.0] on both axes
  *
  * @return fragment position in view space
  */
-vec3 getFragPos(in sampler2D depthTex, in vec2 coord) {
+vec3 getFragPos(in vec2 coord, in sampler2D depthTex) {
 	float depth = texture2D(depthTex, coord).x;
-	return getFragPos(depth, coord);
-}
-
-/**
- * Converts three-dimensional position to normalized screen coordinates.
- *
- * @param pos spatial position in view space
- *
- * @return UV coordinate in range [0.0, 1.0] on both axes
- */
-vec2 getScreenCoord(in vec3 viewPos) {
-	vec4 proj = gbufferProjection * vec4(viewPos, 1.0);
-	return (proj.xy / proj.w) * 0.5 + 0.5;
+	return projPos(gbufferProjectionInverse, vec3(coord, depth) * 2.0 - 1.0);
 }
 
 #include "framebuffer.glsl"

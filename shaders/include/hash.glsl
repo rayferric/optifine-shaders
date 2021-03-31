@@ -24,8 +24,8 @@ float hash(in vec3 value) {
  * @return normalized direction vector
  */
 vec2 hashCircleDir(in vec3 value) {
-	float angle = hash(value) * 2.0 * PI;
-	return vec2(cos(angle), sin(angle));
+	float theta = hash(value) * 2.0 * PI;
+	return vec2(cos(theta), sin(theta));
 }
 
 /**

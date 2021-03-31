@@ -8,14 +8,14 @@
 
 varying vec2 v_TexCoord;
 
-uniform sampler2D       colortex1;
-uniform sampler2D       colortex2;
-uniform sampler2D       colortex3;
-uniform sampler2D       depthtex0;  // All entities
-uniform sampler2D       depthtex1;  // Opaque entities only
+uniform sampler2D colortex1;
+uniform sampler2D colortex2;
+uniform sampler2D colortex3;
+uniform sampler2D depthtex0;  // All entities
+uniform sampler2D depthtex1;  // Opaque entities only
 uniform sampler2D shadowtex0; // All entities
 uniform sampler2D shadowtex1; // Opaque entities only
-uniform sampler2D       shadowcolor0;
+uniform sampler2D shadowcolor0;
 
 void main() {
 	vec3 N = decodeNormal(texture2D(colortex1, v_TexCoord).xy);
@@ -33,8 +33,8 @@ void main() {
 	vec2 ambientLight = ambientLightMask.xy;
 	MaterialMask mask = decodeMask(ambientLightMask.z);
 
-	vec3 fragPos       = getFragPos(depthtex0, v_TexCoord);
-	vec3 fragPosOpaque = getFragPos(depthtex1, v_TexCoord);
+	vec3 fragPos       = getFragPos(v_TexCoord, depthtex0);
+	vec3 fragPosOpaque = getFragPos(v_TexCoord, depthtex1);
 
 	vec3 V = normalize(-fragPos);
 	vec3 L = normalize(shadowLightPosition);

@@ -66,10 +66,9 @@ const int shadowMapResolution = 2048; // [512 1024 2048 3072 4096]
 
 const float shadowDistance          = 120.0; // 120.0 is the sweet spot
 const float shadowDistanceRenderMul = 1.0;   // Required to work with shadowDistance
-const bool 	shadowHardwareFiltering = false;  // Must be enabled in order to use shadow2D()
+const bool 	shadowHardwareFiltering = false; // Must be disabled in order to have plain sampler2D shadow textures
 const float	sunPathRotation	        = -45.0; // The sun indicates south at noon
 const float eyeBrightnessHalflife   = 1.0;   // Eye adaptation speed in seconds
-const float ambientOcclusionLevel   = 1.0;
 
 #define MIN_EXPOSURE  -16.0 // Lowest exposure value reachable by the camera in EV
 #define MAX_EXPOSURE  0.0   // Highest exposure value reachable by the camera in EV

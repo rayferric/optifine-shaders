@@ -13,11 +13,12 @@ float computeSSAO(in vec3 fragPos, in vec3 normal, in sampler2D depthTex) {
 	float aoStrength = 0.0;
 
 	for (int i = 0; i < SSAO_SAMPLES; i++) {
-		vec3 samplePos = fragPos + hashHemisphereDir(frameTimeCounter * fragPos + float(i), normal) * SSAO_RADIUS * hash(fragPos * float(i));
-		vec2 coord = getScreenCoord(samplePos);
+		vec3 unitOffset = hashHemisphereDir(frameTimeCounter * fragPos + float(i), normal) * sqrt(hash(fragPos + float(i)));
+		vec3 samplePos = fragPos + (unitOffset * SSAO_RADIUS);
+		vec2 coord = projPos(gbufferProjection, samplePos).xy * 0.5 + 0.5;
 		
 		float testDepth = -samplePos.z;
-		float realDepth = -getFragPos(depthTex, coord).z;
+		float realDepth = -getFragPos(coord, depthTex).z;
 		float rangeFactor = smoothstep(0.0, 1.0, SSAO_RADIUS / distance(realDepth, testDepth));
 		aoStrength += float(realDepth < testDepth) * rangeFactor;
 	}

@@ -35,7 +35,7 @@ float getShadowDistortionFactor(in vec2 pos) {
  *
  * @return shadow coordinate, ready to be plugged into shadow2D()
  */
-vec3 getShadowCoord(in vec3 viewPos, in float cosTheta) {
+vec3 getShadowCoord(in vec3 viewPos, float cosTheta) {
 	vec4 shadowPos = shadowProjection * shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0);
 	shadowPos.xyz /= shadowPos.w;
 
@@ -100,65 +100,60 @@ vec3 getShadowColor(in sampler2DShadow shadowMap, in sampler2DShadow shadowMapOp
 #endif
 }
 
-#define SUN_ANGULAR_RADIUS (0.0087 * 20.0) // In radians
+#define SHADOW_SAMPLES 32
+#define SHADOW_RADIUS 0.2 // In meters
+#define SHADOW_BIAS 0.001
+#define SHADOW_SUN_ANGULAR_RADIUS (0.0087 * 5.0) // In radians
 
 float getTemporalShadow(in sampler2D shadowMap, in vec3 viewPos) {
-	vec4 shadowPos = shadowProjection * shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0);
-	shadowPos.xyz /= shadowPos.w;
+	vec3 shadowViewPos = (shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
+	
+	float occlusionDistance = 0.0;
+	int occludedSamples = 0;
+	for (int i = 0; i < SHADOW_SAMPLES; i++) {
+		vec2 unitOffset = hashCircleDir(frameTimeCounter * viewPos + float(i)) * sqrt(hash(viewPos + float(i)));
+		vec3 shadowClipPos = projPos(shadowProjection, shadowViewPos + vec3(unitOffset * SHADOW_RADIUS, 0.0));
 
-	float distortionFactor = getShadowDistortionFactor(shadowPos.xy);
-	shadowPos.xy *= distortionFactor;
+		float distortionFactor = getShadowDistortionFactor(shadowClipPos.xy);
 
-	vec3 shadowCoord = shadowPos.xyz * 0.5 + 0.5;
-	float occluderDepth = texture2D(shadowMap, shadowCoord.xy).x;
-	vec3 occluderShadowPos = vec3(shadowCoord.xy, occluderDepth) * 2.0 - 1.0;
-	occluderShadowPos.xy /= distortionFactor;
+		shadowClipPos.xy *= distortionFactor;
+		vec3 shadowCoord = shadowClipPos * 0.5 + vec3(0.5, 0.5, 0.5 - SHADOW_BIAS);
 
-	vec4 occluderViewPos = shadowProjectionInverse * vec4(occluderShadowPos, 1.0);
-	occluderViewPos.xyz /= occluderViewPos.w;
-	occluderViewPos = gbufferModelView * shadowModelViewInverse * occluderViewPos;
+		float occluderDepth = texture2D(shadowMap, shadowCoord.xy).x;
+		if (occluderDepth < shadowCoord.z) {
+			vec3 occluderShadowClipPos = vec3(shadowCoord.xy, occluderDepth) * 2.0 - 1.0;
+			occluderShadowClipPos.xy /= distortionFactor;
 
-	// This is the real distance between the occluder and the fragment
-	float dist = distance(viewPos, occluderViewPos.xyz);
-	float jitterRadius = dist * tan(SUN_ANGULAR_RADIUS);
-	//jitterRadius = min(jitterRadius, 0.2);
+			vec3 occluderShadowViewPos = projPos(shadowProjectionInverse, occluderShadowClipPos);
 
-	float shade = 0.0;
-	{
-	vec4 newShadowPos = shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0);
-	newShadowPos.xy += hashCircleDir(viewPos * frameTimeCounter) * hash(viewPos * frameTimeCounter) * jitterRadius;
-	newShadowPos = shadowProjection * newShadowPos;
-	newShadowPos.xyz /= newShadowPos.w;
-
-	float newDistortionFactor = getShadowDistortionFactor(newShadowPos.xy);
-	newShadowPos.xy *= distortionFactor;
-
-	vec3 newShadowCoord = newShadowPos.xyz * 0.5 + 0.5;
-	shade += float(texture2D(shadowMap, newShadowCoord.xy).x > newShadowCoord.z - 0.0001);
-	}{
-	vec4 newShadowPos = shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0);
-	newShadowPos.xy += hashCircleDir(viewPos * frameTimeCounter) * hash(viewPos * frameTimeCounter) * jitterRadius;
-	newShadowPos = shadowProjection * newShadowPos;
-	newShadowPos.xyz /= newShadowPos.w;
-
-	float newDistortionFactor = getShadowDistortionFactor(newShadowPos.xy);
-	newShadowPos.xy *= distortionFactor;
-
-	vec3 newShadowCoord = newShadowPos.xyz * 0.5 + 0.5;
-	shade += float(texture2D(shadowMap, newShadowCoord.xy).x > newShadowCoord.z - 0.0001);
-	}{
-	vec4 newShadowPos = shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0);
-	newShadowPos.xy += hashCircleDir(viewPos * frameTimeCounter) * hash(viewPos * frameTimeCounter) * jitterRadius;
-	newShadowPos = shadowProjection * newShadowPos;
-	newShadowPos.xyz /= newShadowPos.w;
-
-	float newDistortionFactor = getShadowDistortionFactor(newShadowPos.xy);
-	newShadowPos.xy *= distortionFactor;
-
-	vec3 newShadowCoord = newShadowPos.xyz * 0.5 + 0.5;
-	shade += float(texture2D(shadowMap, newShadowCoord.xy).x > newShadowCoord.z - 0.0001);
+			occlusionDistance += distance(shadowViewPos, occluderShadowViewPos);
+			occludedSamples++;
+		}
 	}
-	return shade / 3.0;
+	
+	if (occludedSamples == 0)
+		return 1.0;
+	else if (occludedSamples == SHADOW_SAMPLES)
+		return 0.0;
+
+	occlusionDistance /= float(occludedSamples);
+	float shadowRadius = tan(SHADOW_SUN_ANGULAR_RADIUS) * occlusionDistance;
+	shadowRadius = min(shadowRadius, SHADOW_RADIUS);
+
+	float occlusion = 0.0;
+	for (int i = 0; i < SHADOW_SAMPLES; i++) {
+		vec2 unitOffset = hashCircleDir(frameTimeCounter * viewPos + float(i)) * sqrt(hash(viewPos + float(i)));
+		vec3 shadowClipPos = projPos(shadowProjection, shadowViewPos + vec3(unitOffset * shadowRadius, 0.0));
+
+		float distortionFactor = getShadowDistortionFactor(shadowClipPos.xy);
+
+		shadowClipPos.xy *= distortionFactor;
+		vec3 shadowCoord = shadowClipPos * 0.5 + vec3(0.5, 0.5, 0.5 - SHADOW_BIAS);
+
+		float occluderDepth = texture2D(shadowMap, shadowCoord.xy).x;
+		occlusion += float(occluderDepth < shadowCoord.z);
+	}
+	return 1.0 - (occlusion / float(SHADOW_SAMPLES));
 }
 
 #endif // SHADOW_GLSL
