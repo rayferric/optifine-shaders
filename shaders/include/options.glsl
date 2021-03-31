@@ -49,7 +49,7 @@ const int shadowMapResolution = 2048; // [512 1024 2048 3072 4096]
 #define   TORCH_TEMPERATURE     2300  // [1700 2000 2300 2600 2900]
 #define   TORCH_FALLOFF         8.0   // [4.0 6.0 8.0 12.0 16.0]
 #define   SKY_FALLOFF           8.0   // [1.0 2.0 4.0 6.0 8.0 12.0 16.0]
-#define   SSAO_SAMPLES          8     // [0 4 8 16] // TODO: Hardcode once TAA is implemented
+#define   SSAO_SAMPLES          8     // [0 4 8 16 32] // TODO: Hardcode once TAA is implemented
 #define   SSAO_EXPONENT         1.5   // [0.5 1.0 1.5 2.0 2.5]
 
 // Waving

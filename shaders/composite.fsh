@@ -53,9 +53,9 @@ void main() {
 
 		//vec3 shadowCoord = getShadowCoord(fragPos, dot(N, L));
 		//vec3 shadowFactor = getShadowColor(shadowtex0, shadowtex1, shadowcolor0, shadowCoord) * NdotL;
-		vec3 shadowFactor = vec3(getTemporalShadow(shadowtex0, fragPos));
+		vec3 shadowColor = getSoftShadow(shadowtex0, shadowtex1, shadowcolor0, fragPos, N, L) * NdotL;
 		vec3 shadowContribution = cookTorrance(albedo, roughness, metallic, NdotV, NdotL, NdotH, HdotV);
-		vec3 shadowEnergy = (SUN_ENERGY * shadowFactor) * shadowContribution;
+		vec3 shadowEnergy = (SUN_ENERGY * shadowColor) * shadowContribution;
 
 		// Ambient specular energy is computed in composite
 		vec3 specular = mix(vec3(0.04), albedo, metallic);
@@ -65,11 +65,10 @@ void main() {
 		vec3 torchDiffuseEnergy = (TORCH_ENERGY * ambientLight.y) * ambientDiffuseContribution;
 
 		hdr = shadowEnergy + skyDiffuseEnergy + torchDiffuseEnergy;
+		hdr = mix(texture2D(colortex0, v_TexCoord).xyz * albedo, hdr, opacity);
 	} else {
 		hdr = texture2D(colortex0, v_TexCoord).xyz;
 	}
-
-	hdr = mix(texture2D(colortex0, v_TexCoord).xyz * albedo, hdr, opacity);
 
 	// colortex0 (HDR)
 	gl_FragData[0].xyz = hdr;
