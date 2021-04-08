@@ -19,11 +19,11 @@ float hash(in vec3 value) {
 /**
  * Computes uniformly distributed random direction on unit circle.
  *
- * @param value  three-component value to hash
+ * @param value three-component value to hash
  *
  * @return normalized direction vector
  */
-vec2 hashCircleDir(in vec3 value) {
+vec2 hashToCircleDir(in vec3 value) {
 	float theta = hash(value) * 2.0 * PI;
 	return vec2(cos(theta), sin(theta));
 }
@@ -31,11 +31,11 @@ vec2 hashCircleDir(in vec3 value) {
 /**
  * Computes uniformly distributed random direction on unit sphere.
  *
- * @param value  three-component value to hash
+ * @param value three-component value to hash
  *
  * @return normalized direction vector
  */
-vec3 hashSphereDir(in vec3 value) {
+vec3 hashToSphereDir(in vec3 value) {
 	vec2 hashed = vec2(hash(value), hash(value + 1.0));
 	float s = hashed.x * 2.0 * PI;
 	float t = hashed.y * 2.0 - 1.0;
@@ -51,9 +51,33 @@ vec3 hashSphereDir(in vec3 value) {
  *
  * @return normalized direction vector
  */
-vec3 hashHemisphereDir(in vec3 value, in vec3 normal) {
-	vec3 dir = hashSphereDir(value);
+vec3 hashToHemisphereDir(in vec3 value, in vec3 normal) {
+	vec3 dir = hashToSphereDir(value);
 	return dir * sign(dot(dir, normal));
+}
+
+/**
+ * Computes uniformly distributed random position in unit circle.
+ *
+ * @param value three-component value to hash
+ *
+ * @return offset vector
+ */
+vec2 hashToCircleOffset(in vec3 value) {
+	return hashToCircleDir(value) * sqrt(hash(value.zyx));
+}
+
+/**
+ * Computes uniformly distributed random position
+ * in unit hemisphere oriented along normal.
+ *
+ * @param value  three-component value to hash
+ * @param normal hemisphere orientation
+ *
+ * @return offset vector
+ */
+vec3 hashToHemisphereOffset(in vec3 value, in vec3 normal) {
+	return hashToHemisphereDir(value, normal) * sqrt(hash(value.zyx));
 }
 
 #endif // HASH_GLSL

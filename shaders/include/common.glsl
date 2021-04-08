@@ -18,21 +18,23 @@ uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 uniform mat4 shadowProjectionInverse;
 
-uniform int heldItemId;
-uniform int heldItemId2;
-uniform int worldTime;
+uniform int   heldItemId;
+uniform int   heldItemId2;
+uniform int   worldTime;
 uniform float frameTimeCounter;
 uniform float viewWidth;
 uniform float viewHeight;
-uniform vec3 sunPosition; 
-uniform vec3 moonPosition; 
-uniform vec3 shadowLightPosition;
-uniform vec3 upPosition;
-uniform vec3 cameraPosition;
-uniform vec3 previousCameraPosition;
+uniform vec3  sunPosition; 
+uniform vec3  moonPosition; 
+uniform vec3  shadowLightPosition;
+uniform vec3  upPosition;
+uniform vec3  cameraPosition;
+uniform vec3  previousCameraPosition;
 uniform ivec2 eyeBrightnessSmooth;
-uniform int isEyeInWater;
-uniform vec4 entityColor;
+uniform int   isEyeInWater;
+uniform vec4  entityColor;
+uniform float near;
+uniform float far;
 
 // /**
 //  * Returns the hyperbolic cosine of the parameter.
@@ -126,6 +128,19 @@ vec3 projPos(mat4 projMatrix, in vec3 pos) {
 vec3 getFragPos(in vec2 coord, in sampler2D depthTex) {
 	float depth = texture2D(depthTex, coord).x;
 	return projPos(gbufferProjectionInverse, vec3(coord, depth) * 2.0 - 1.0);
+}
+
+/**
+ * Converts player camera normalized depth to
+ * linear value between the clipping planes.
+ *
+ * @param depth non-linear depth in range [0, 1]
+ *
+ * @return linear distance from camera in range [near, far]
+ */
+float linearizeDepth(in float depth) {
+    depth = depth * 2.0 - 1.0;
+    return (2.0 * near * far) / (far + near - depth * (far - near));	
 }
 
 #include "framebuffer.glsl"
