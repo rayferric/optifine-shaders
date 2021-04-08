@@ -70,14 +70,15 @@ vec3 getHardShadow(in sampler2D shadowMap, in sampler2D shadowMapOpaque, in samp
 	return sampleShadowColor(shadowMap, shadowMapOpaque, shadowColorTex, shadowCoord);
 }
 
-#define SHADOW_CONTACT_DISTANCE         0.2  // Ray marching distance
-#define SHADOW_CONTACT_BASE_TOLERANCE   0.5  // Max Z difference to even consider a hit, might introduce banding
-#define SHADOW_CONTACT_REFINE_TOLERANCE 0.05 // Max Z difference to score a refined hit
-#define SHADOW_CONTACT_BASE_SAMPLES     8    // Number of marching steps
-#define SHADOW_CONTACT_REFINE_SAMPLES   4    // Number of refinement steps
+#define SHADOW_CONTACT_DISTANCE       0.2  // Ray marching distance
+#define SHADOW_CONTACT_TOLERANCE      0.05 // Max Z difference to score a hit
+#define SHADOW_CONTACT_BASE_SAMPLES   8    // Number of marching steps
+#define SHADOW_CONTACT_REFINE_SAMPLES 4    // Number of refinement steps
 
 // Call this once origin is behind the depth buffer
 vec3 binaryRefine(in vec3 origin, in vec3 offset, in sampler2D depthTex) {
+	vec3 lastBehind = origin;
+
 	// We're currently behind the depth buffer, so let's go halfway back
 	offset *= 0.5;
 	origin -= offset;
@@ -86,12 +87,18 @@ vec3 binaryRefine(in vec3 origin, in vec3 offset, in sampler2D depthTex) {
 		vec3  coord = projPos(gbufferProjection, origin) * 0.5 + 0.5;
 		float depth = texture2D(depthTex, coord.xy).x;
 
+		bool inFront = depth > coord.z;
+
+		// Mark more precise position, which
+		// is still behind the depth buffer
+		lastBehind = mix(origin, lastBehind, float(inFront));
+
 		// Trace forward once we got in front of it
 		offset *= 0.5;
-		origin += depth > coord.z ? offset : -offset;
+		origin += inFront ? offset : -offset;
 	}
 
-	return origin;
+	return lastBehind;
 }
 
 vec3 getContactShadow(
@@ -107,12 +114,13 @@ vec3 getContactShadow(
 		float depth = texture2D(depthTex, coord.xy).x;
 
 		// Once we're behind the depth buffer
-		if (coord.z > depth && -origin.z - linearizeDepth(depth) < SHADOW_CONTACT_BASE_TOLERANCE) {
+		if (coord.z > depth) {
 			origin = binaryRefine(origin, offset, depthTex);
 			coord  = projPos(gbufferProjection, origin) * 0.5 + 0.5;
 			depth  = texture2D(depthTex, coord.xy).x;
 
-			if (distance(-origin.z, linearizeDepth(depth)) > SHADOW_CONTACT_REFINE_TOLERANCE)
+			// Break if refinement didn't move the origin close enough
+			if (distance(-origin.z, linearizeDepth(depth)) > SHADOW_CONTACT_TOLERANCE)
 				break;
 			
 			return vec3(0.0);
