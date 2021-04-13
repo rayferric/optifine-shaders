@@ -3,13 +3,43 @@
 
 #include "encoding.glsl"
 #include "hash.glsl"
+#include "ray_march.glsl"
 
 // Defines precision gain towards the center of the shadow map in range (0.0, 1.0)
 #define SHADOW_MAP_DISTORTION_STRENGTH 0.8
 // How much the distorted shadow map is stretched to a rectangular shape [1.0 - inf)
 #define SHADOW_MAP_DISTORTION_STRETCH  12.0
 
-uniform mat4 shadowModelViewInverse;
+#define SHADOW_CONTACT_RAY_LENGTH    0.3  // Ray marching distance
+#define SHADOW_CONTACT_SAMPLES       8    // Number of marching steps
+#define SHADOW_CONTACT_TOLERANCE     0.05 // Max Z difference to score a hit
+#define SHADOW_CONTACT_VIEW_DISTANCE 5.0
+#define SHADOW_CONTACT_FADE_DISTANCE 2.0
+
+float getContactShadow(
+		in sampler2D depthTex,
+		in vec3      viewPos,
+		in vec3      lightDir) {
+	float cutoffDistance = SHADOW_CONTACT_VIEW_DISTANCE + SHADOW_CONTACT_FADE_DISTANCE;
+
+	if (-viewPos.z < cutoffDistance) {
+		float stepLen = SHADOW_CONTACT_RAY_LENGTH / float(SHADOW_CONTACT_SAMPLES);
+		
+		//bool hit = rayMarch(depthTex, viewPos, lightDir, stepLen,
+				//1.0, SHADOW_CONTACT_SAMPLES, SHADOW_CONTACT_TOLERANCE);
+		RayMarchResult result = rayMarch(
+				depthTex, viewPos, lightDir,
+				SHADOW_CONTACT_RAY_LENGTH,
+				SHADOW_CONTACT_SAMPLES,
+				SHADOW_CONTACT_TOLERANCE);
+		float shading = float(!result.hasHit);
+
+		float fade = smoothstep(SHADOW_CONTACT_VIEW_DISTANCE,
+				cutoffDistance, -viewPos.z);
+		return mix(shading, 1.0, fade);
+	} else
+		return 1.0;
+}
 
 /**
  * Computes vertex position scaling factor used
@@ -26,11 +56,6 @@ float getShadowDistortionFactor(in vec2 pos) {
 	return 1.0 / d;
 }
 
-// @return whether shadow coordinates are in shadow
-float sampleShadowMap(in sampler2D shadowMap, in vec3 shadowCoord) {
-	return float(texture2D(shadowMap, shadowCoord.xy).x > shadowCoord.z);
-}
-
 /**
  * Computes optionally colored shadow intensity factor.
  *
@@ -41,10 +66,12 @@ float sampleShadowMap(in sampler2D shadowMap, in vec3 shadowCoord) {
  *
  * @return shadow color
  */
-vec3 sampleShadowColor(in sampler2D shadowMap, in sampler2D shadowMapOpaque, in sampler2D shadowColorTex, in vec3 shadowCoord) {
-	float shading = sampleShadowMap(shadowMap, shadowCoord);
+vec3 getShadowColor(in sampler2D shadowMap, in sampler2D shadowMapOpaque, in sampler2D shadowColorTex, in vec3 shadowCoord) {
+	//float contactShadow = getContactShadow(depthtex0, fragPos, L);
+
+	float shading = step(shadowCoord.z, texture2D(shadowMap, shadowCoord.xy).x);
 #ifdef COLORED_SHADOWS
-	float opaqueShading = sampleShadowMap(shadowMapOpaque, shadowCoord);
+	float opaqueShading = step(shadowCoord.z, texture2D(shadowMapOpaque, shadowCoord.xy).x);
 	vec3 shadowColor = gammaToLinear(texture2D(shadowColorTex, shadowCoord.xy).xyz);
 	return (opaqueShading - shading) * shadowColor + shading;
 #else
@@ -67,74 +94,14 @@ vec3 getHardShadow(in sampler2D shadowMap, in sampler2D shadowMapOpaque, in samp
 	float bias = getShadowBias(normal, lightDir, distortionFactor);
 
 	vec3 shadowCoord = shadowClipPos * 0.5 + vec3(0.5, 0.5, 0.5 - bias);
-	return sampleShadowColor(shadowMap, shadowMapOpaque, shadowColorTex, shadowCoord);
-}
-
-#define SHADOW_CONTACT_DISTANCE       0.2  // Ray marching distance
-#define SHADOW_CONTACT_TOLERANCE      0.05 // Max Z difference to score a hit
-#define SHADOW_CONTACT_BASE_SAMPLES   8    // Number of marching steps
-#define SHADOW_CONTACT_REFINE_SAMPLES 4    // Number of refinement steps
-
-// Call this once origin is behind the depth buffer
-vec3 binaryRefine(in vec3 origin, in vec3 offset, in sampler2D depthTex) {
-	vec3 lastBehind = origin;
-
-	// We're currently behind the depth buffer, so let's go halfway back
-	offset *= 0.5;
-	origin -= offset;
-
-	for (int i = 0; i < SHADOW_CONTACT_REFINE_SAMPLES; i++) {
-		vec3  coord = projPos(gbufferProjection, origin) * 0.5 + 0.5;
-		float depth = texture2D(depthTex, coord.xy).x;
-
-		bool inFront = depth > coord.z;
-
-		// Mark more precise position, which
-		// is still behind the depth buffer
-		lastBehind = mix(origin, lastBehind, float(inFront));
-
-		// Trace forward once we got in front of it
-		offset *= 0.5;
-		origin += inFront ? offset : -offset;
-	}
-
-	return lastBehind;
-}
-
-vec3 getContactShadow(
-		in sampler2D depthTex,
-		in vec3      viewPos,
-		in vec3      lightDir) {
-	vec3 origin = viewPos;
-	vec3 offset = lightDir * (SHADOW_CONTACT_DISTANCE / float(SHADOW_CONTACT_BASE_SAMPLES));
-
-	for (int i = 0; i < SHADOW_CONTACT_BASE_SAMPLES; i++) {
-		origin += offset;
-		vec3  coord = projPos(gbufferProjection, origin) * 0.5 + 0.5;
-		float depth = texture2D(depthTex, coord.xy).x;
-
-		// Once we're behind the depth buffer
-		if (coord.z > depth) {
-			origin = binaryRefine(origin, offset, depthTex);
-			coord  = projPos(gbufferProjection, origin) * 0.5 + 0.5;
-			depth  = texture2D(depthTex, coord.xy).x;
-
-			// Break if refinement didn't move the origin close enough
-			if (distance(-origin.z, linearizeDepth(depth)) > SHADOW_CONTACT_TOLERANCE)
-				break;
-			
-			return vec3(0.0);
-		}
-	}
-
-	return vec3(1.0);
+	return getShadowColor(shadowMap, shadowMapOpaque, shadowColorTex, shadowCoord);
 }
 
 #define SHADOW_DISTANCE_SAMPLES 8
 #define SHADOW_SAMPLES 8
-#define SHADOW_MIN_PENUMBRA 0.02
+#define SHADOW_MIN_PENUMBRA 0.025
 #define SHADOW_MAX_PENUMBRA 0.2 // In meters
-#define SHADOW_SUN_ANGULAR_RADIUS (0.087) // In radians, not physically accurate
+#define SHADOW_SUN_ANGULAR_RADIUS (0.0087 * 4.0) // In radians, not physically accurate
 
 vec3 getSoftShadow(
 		in sampler2D shadowMap,
@@ -156,43 +123,37 @@ vec3 getSoftShadow(
 	vec2 shadowProjScale = vec2(shadowProjection[0][0], shadowProjection[1][1]);
 	
 	// Estimate distance to occluder, if any
-
-	float occlusionDepth = 1.0;
-	int occludedSamples = 0;
+	float occlusionDepth = 0.0;
+	float occludedSamples = 0.0;
 	for (int i = 0; i < SHADOW_DISTANCE_SAMPLES; i++) {
-		vec2 unitOffset = hashToCircleOffset(frameTimeCounter * viewPos + float(i)) * hash(viewPos + float(i));
+		vec2 unitOffset = hashToCircleOffset(frameTimeCounter * viewPos + float(i));
 		vec2 offsetShadowClipPos = shadowClipPos.xy + (unitOffset * SHADOW_MAX_PENUMBRA * shadowProjScale);
 		offsetShadowClipPos *= getShadowDistortionFactor(offsetShadowClipPos);
 		vec2 shadowUv = offsetShadowClipPos * 0.5 + 0.5;
 
 		float occluderDepth = texture2D(shadowMap, shadowUv).x;
-		bool inShadow = occluderDepth < shadowDepth;
-		occlusionDepth = min(occlusionDepth, inShadow ? occluderDepth : occlusionDepth);
-		occludedSamples += int(inShadow);
+		float inShadow = step(occluderDepth, shadowDepth);
+		occlusionDepth += occluderDepth * inShadow;
+		occludedSamples += inShadow;
 	}
-
-	// Cut short in case of full umbra
-	if (occludedSamples == SHADOW_DISTANCE_SAMPLES) {
-		shadowClipPos.xy *= distortionFactor;
-		vec3 shadowCoord = vec3(shadowClipPos.xy * 0.5 + 0.5, shadowDepth);
-		return sampleShadowColor(shadowMap, shadowMapOpaque, shadowColorTex, shadowCoord);
-	}
-	// Otherwise we're sampling in penumbra (or full light)
+	occlusionDepth /= occludedSamples;
 
 	// Convert occluder depth to occlusion distance and compute penumbra radius
 	float occluderShadowViewPosZ = projPos(shadowProjectionInverse, vec3(0.0, 0.0, occlusionDepth * 2.0 - 1.0)).z;
 	float occlusionDistance = distance(shadowViewPos.z, occluderShadowViewPosZ);
 	float penumbraRadius = tan(SHADOW_SUN_ANGULAR_RADIUS) * occlusionDistance;
-	penumbraRadius = clamp(penumbraRadius, SHADOW_MIN_PENUMBRA, SHADOW_MAX_PENUMBRA);
+	// Scale minimum penumbra radius with shadow resolution, so no self-shadowing occurs
+	float minPenumbra = min(SHADOW_MIN_PENUMBRA, SHADOW_MIN_PENUMBRA * (shadowMapResolution / 2048.0));
+	penumbraRadius = clamp(penumbraRadius, minPenumbra, SHADOW_MAX_PENUMBRA);
 
 	vec3 color = vec3(0.0);
 	for (int i = 0; i < SHADOW_SAMPLES; i++) {
-		vec2 unitOffset = hashToCircleOffset(frameTimeCounter * viewPos + float(i)) * hash(viewPos + float(i));
+		vec2 unitOffset = hashToCircleOffset(frameTimeCounter * viewPos + float(i));
 		vec2 offsetShadowClipPos = shadowClipPos.xy + (unitOffset * penumbraRadius * shadowProjScale);
 		offsetShadowClipPos *= getShadowDistortionFactor(offsetShadowClipPos);
 		vec3 shadowCoord = vec3(offsetShadowClipPos * 0.5 + 0.5, shadowDepth);
 
-		color += sampleShadowColor(shadowMap, shadowMapOpaque, shadowColorTex, shadowCoord);
+		color += getShadowColor(shadowMap, shadowMapOpaque, shadowColorTex, shadowCoord);
 	}
 	return color / float(SHADOW_SAMPLES);
 }

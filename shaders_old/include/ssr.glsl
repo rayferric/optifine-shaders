@@ -59,11 +59,12 @@ vec3 rayMarch(in sampler2D depthTex, in vec3 origin, in vec3 dir) {
 		coord = (proj.xyz / proj.w) * 0.5 + 0.5;
 		if(coord.x <= 0.0 || coord.x >= 1.0 || coord.y <= 0.0 || coord.y >= 1.0 || coord.z <= 0.0 || coord.z >= 1.0)break;
 
-		float rayDepth   = -origin.z; // Current ray depth
-		float worldDepth = -getFragPos(depthTex, coord.xy).z; // World depth at current ray position projected onto the depth buffer
-		float stepDepth  = -dir.z; // Expected ray depth increase when no collision occurred
+		float rayDepth   = -origin.z;
+		float worldDepth = -getFragPos(depthTex, coord.xy).z;
+		float stepDepth  = -dir.z;
 
-		// When the ray depth finally surpassed world depth, we check whether the difference is within a reasonable margin to prevent infinite repetition of missing data
+		// When the ray depth finally surpassed world depth, we refine and
+		// check whether the difference is within a reasonable margin
 		if(rayDepth > worldDepth && rayDepth - worldDepth < stepDepth + 0.5) {
 			return vec3(binarySearch(depthTex, origin, dir), 1.0);
 		}

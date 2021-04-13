@@ -25,6 +25,8 @@ uniform sampler2D colortex0;
 	return clamp((color * (a * color + b)) / (color * (c * color + d) + e), 0.0, 1.0);
 }
 
+uniform sampler2D depthtex0;
+
 void main() {
 	vec3 hdr = texture2D(colortex0, v_TexCoord).xyz;
 	hdr /= 25000.0;

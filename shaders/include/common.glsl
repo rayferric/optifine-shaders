@@ -136,11 +136,11 @@ vec3 getFragPos(in vec2 coord, in sampler2D depthTex) {
  *
  * @param depth non-linear depth in range [0, 1]
  *
- * @return linear distance from camera in range [near, far]
+ * @return linear distance from camera on the Z axis
  */
-float linearizeDepth(in float depth) {
+float getLinearDepth(in float depth) {
     depth = depth * 2.0 - 1.0;
-    return (2.0 * near * far) / (far + near - depth * (far - near));	
+    return (2.0 * near * far) / (far - depth * (far - near));
 }
 
 #include "framebuffer.glsl"
