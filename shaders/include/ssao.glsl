@@ -3,7 +3,8 @@
 
 #include "hash.glsl"
 
-#define SSAO_RADIUS 0.25
+#define SSAO_RADIUS   0.25
+#define SSAO_EXPONENT 1.5
 
 float computeSSAO(in vec3 fragPos, in vec3 normal, in sampler2D depthTex) {
 #if SSAO_SAMPLES == 0
