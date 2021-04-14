@@ -5,7 +5,7 @@
 
 varying vec2 v_TexCoord;
 
-uniform sampler2D colortex0;
+uniform sampler2D colortex1;
 
 /**
  * Transforms HDR color to LDR using ACES operator.
@@ -28,7 +28,7 @@ uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
 
 void main() {
-	vec3 hdr = texture2D(colortex0, v_TexCoord).xyz;
+	vec3 hdr = texture2D(colortex1, v_TexCoord).xyz;
 	hdr /= 25000.0;
 
 	vec3 color = tonemapACES(hdr);

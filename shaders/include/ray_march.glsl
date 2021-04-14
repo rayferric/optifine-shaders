@@ -87,11 +87,15 @@ RayMarchResult rayMarch(
 		in vec3      origin,
 		in vec3      dir,
 		in float     rayLength,
+		in float     bias,
 		in int       stepCount,
 		in float     thickness) {
-	// Compute and project endpoints
-	vec3 start = origin;
+	vec3 start = origin + dir * 0.02;
 	vec3 end   = origin + dir * rayLength;
+
+	// Clip endpoint to near plane
+	rayLength = -end.z > near ? rayLength : (-origin.z - near) / dir.z;
+	end = origin + dir * rayLength;
 
 	vec4 projStart = gbufferProjection * vec4(start, 1.0);
 	vec4 projEnd   = gbufferProjection * vec4(end, 1.0);
@@ -119,7 +123,7 @@ RayMarchResult rayMarch(
 		if (!insideBox(screen, vec2(0.0), vec2(1.0)))
 			break;
 
-		float rayDepth    = -(homoZ / invW);
+		float rayDepth = -(homoZ / invW);
 
 		if (rayDepth < near || rayDepth > far)
 			break;
