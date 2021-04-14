@@ -36,21 +36,21 @@ void main() {
 
 	vec3 N = normalize((texture2D(normals, v_TexCoord).xyz * 2.0 - 1.0) * v_TBN);
 
-	// colortex1: Packed Normal
+	// colortex2: Packed Normal
 	gl_FragData[0].xy = encodeNormal(N);
 	gl_FragData[0].w  = opacity;
 
-	// colortex2: Packed sRGB Albedo RG; Packed (sRGB Albedo B + Opacity); Packed (Roughness + Metallic)
+	// colortex3: Packed sRGB Albedo RG; Packed (sRGB Albedo B + Opacity); Packed (Roughness + Metallic)
 	vec3 albedoGamma = linearToGamma(albedo);
 	gl_FragData[1].x = encodeVec2(albedoGamma.xy);
 	gl_FragData[1].y = encodeVec2(vec2(albedoGamma.z, opacity));
 	gl_FragData[1].z = encodeVec2(vec2(roughness, metallic));
 	gl_FragData[1].w = 1.0;
 
-	// colortex3: Gamma-Space Sky Light; Gamma-Space Torch Light; Material ID
+	// colortex4: Gamma-Space Sky Light; Gamma-Space Torch Light; Material ID
 	gl_FragData[2].xy = linearToGamma(v_AmbientLight);
 	gl_FragData[2].z  = encodeMask(makeLitMask(v_Entity));
 	gl_FragData[2].w  = 1.0;
 }
 
-/* DRAWBUFFERS:123 */
+/* DRAWBUFFERS:234 */

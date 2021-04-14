@@ -8,10 +8,10 @@
 
 varying vec2 v_TexCoord;
 
-uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D colortex3;
+uniform sampler2D colortex4;
 uniform sampler2D depthtex0;  // All entities
 uniform sampler2D depthtex1;  // Opaque entities only
 uniform sampler2D shadowtex0; // All entities
@@ -21,9 +21,9 @@ uniform sampler2D shadowcolor0;
 void main() {
 	// Extract G-Buffer data
 	
-	vec3 N = decodeNormal(texture2D(colortex1, v_TexCoord).xy);
+	vec3 N = decodeNormal(texture2D(colortex2, v_TexCoord).xy);
 
-	vec3 albedoOpacityRM = texture2D(colortex2, v_TexCoord).xyz;
+	vec3 albedoOpacityRM = texture2D(colortex3, v_TexCoord).xyz;
 	vec2 RG = decodeVec2(albedoOpacityRM.x);
 	vec2 BO = decodeVec2(albedoOpacityRM.y);
 	vec2 RM = decodeVec2(albedoOpacityRM.z);
@@ -32,7 +32,7 @@ void main() {
 	float roughness = RM.x;
 	float metallic  = RM.y;
 
-	vec3 ambientLightMask = texture2D(colortex3, v_TexCoord).xyz;
+	vec3 ambientLightMask = texture2D(colortex4, v_TexCoord).xyz;
 	vec2 ambientLight = ambientLightMask.xy;
 	MaterialMask mask = decodeMask(ambientLightMask.z);
 
@@ -65,14 +65,14 @@ void main() {
 		vec3 torchDiffuseEnergy = (TORCH_ENERGY * ambientLight.y) * ambientDiffuseContribution;
 
 		hdr = shadowEnergy + skyDiffuseEnergy + torchDiffuseEnergy;
-		hdr = mix(texture2D(colortex0, v_TexCoord).xyz * albedo, hdr, opacity);
+		hdr = mix(texture2D(colortex1, v_TexCoord).xyz * albedo, hdr, opacity);
 	} else {
-		hdr = texture2D(colortex0, v_TexCoord).xyz;
+		hdr = texture2D(colortex1, v_TexCoord).xyz;
 	}
 
-	// colortex0 (HDR)
+	// colortex1: HDR Buffer
 	gl_FragData[0].xyz = hdr;
 	gl_FragData[0].w   = 1.0;
 }
 
-/* DRAWBUFFERS:0 */
+/* DRAWBUFFERS:1 */

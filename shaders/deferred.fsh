@@ -8,9 +8,9 @@
 
 varying vec2 v_TexCoord;
 
-uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D colortex3;
+uniform sampler2D colortex4;
 uniform sampler2D depthtex0;  // All entities
 uniform sampler2D depthtex1;  // Opaque entities only
 uniform sampler2D shadowtex0; // All entities
@@ -18,9 +18,9 @@ uniform sampler2D shadowtex1; // Opaque entities only
 uniform sampler2D shadowcolor0;
 
 void main() {
-	vec3 N = decodeNormal(texture2D(colortex1, v_TexCoord).xy);
+	vec3 N = decodeNormal(texture2D(colortex2, v_TexCoord).xy);
 
-	vec3 albedoOpacityRM = texture2D(colortex2, v_TexCoord).xyz;
+	vec3 albedoOpacityRM = texture2D(colortex3, v_TexCoord).xyz;
 	vec2 RG = decodeVec2(albedoOpacityRM.x);
 	vec2 BO = decodeVec2(albedoOpacityRM.y);
 	vec2 RM = decodeVec2(albedoOpacityRM.z);
@@ -29,7 +29,7 @@ void main() {
 	float roughness = RM.x;
 	float metallic  = RM.y;
 
-	vec3 ambientLightMask = texture2D(colortex3, v_TexCoord).xyz;
+	vec3 ambientLightMask = texture2D(colortex4, v_TexCoord).xyz;
 	vec2 ambientLight = ambientLightMask.xy;
 	MaterialMask mask = decodeMask(ambientLightMask.z);
 
@@ -45,10 +45,8 @@ void main() {
 	float NdotH = max(dot(N, H), 0.0);
 	float HdotV = max(dot(H, V), 0.0);
 
-	//vec3 shadowCoord = getShadowCoord(fragPos, dot(N, L));
-	//vec3 shadowFactor = getShadowColor(shadowtex0, shadowtex1, shadowcolor0, shadowCoord) * NdotL;
 	vec3 shadowColor = getSoftShadow(shadowtex0, shadowtex1, shadowcolor0, fragPos, N, L) * NdotL;
-	shadowColor *= vec3(getContactShadow(depthtex0, fragPos, L)); 
+	shadowColor *= getContactShadow(depthtex0, fragPos, L);
 	vec3 shadowContribution = cookTorrance(albedo, roughness, metallic, NdotV, NdotL, NdotH, HdotV);
 	vec3 shadowEnergy = (SUN_ENERGY * shadowColor) * shadowContribution;
 
@@ -61,8 +59,8 @@ void main() {
 
 	skyDiffuseEnergy *= computeSSAO(fragPos, N, depthtex0);
 
-	// colortex0 (HDR)
+	// colortex1: HDR Buffer
 	gl_FragData[0].xyz = shadowEnergy + skyDiffuseEnergy + torchDiffuseEnergy;
 }
 
-/* DRAWBUFFERS:0 */
+/* DRAWBUFFERS:1 */
