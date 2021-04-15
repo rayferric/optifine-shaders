@@ -17,14 +17,14 @@
 bool isSinglePlant(in vec3 entity) {
 	int id = int(entity.x + 0.5);
 	return 
-			id == 6 ||   // Sapling
-			id == 31 ||  // Dead Shrub
-			id == 32 ||  // Grass
-			id == 37 ||  // Dandelion
-			id == 38 ||  // Poppy + Other Flowers
-			id == 39 ||  // Brown Mushroom
-			id == 40 ||  // Red Mushroom
-			id == 59 ||  // Wheat Crops
+			id == 6   || // Sapling
+			id == 31  || // Dead Shrub
+			id == 32  || // Grass
+			id == 37  || // Dandelion
+			id == 38  || // Poppy + Other Flowers
+			id == 39  || // Brown Mushroom
+			id == 40  || // Red Mushroom
+			id == 59  || // Wheat Crops
 			id == 104 || // Pumpkin Stem
 			id == 105 || // Melon Stem
 			id == 115 || // Nether Wart
@@ -126,10 +126,10 @@ bool isStainedGlass(in vec3 entity) {
  *
  * @return true if water, ice or stained glass
  */
-bool isTranslucent(in vec3 entity) {
+bool isOpaque(in vec3 entity) {
 	int id = int(entity.x + 0.5);
 	// Flowing Water; Still Water; Ice; Stained Glass; Stained Glass Pane
-	return id == 8 || id == 9 || id == 79 || id == 95 || id == 160;
+	return id != 8 && id != 9 && id != 79 && id != 95 && id != 160;
 }
 
 /**
@@ -202,7 +202,7 @@ MaterialMask makeUnlitMask() {
 MaterialMask makeLitMask(in vec3 entity) {
 	MaterialMask mask;
 	mask.isLit    = true;
-	mask.isOpaque = !isTranslucent(entity);
+	mask.isOpaque = isOpaque(entity);
 	mask.isHand   = false;
 	return mask;
 }
@@ -232,9 +232,9 @@ vec3 remapBlockRME(in vec3 RME, in vec3 entity) {
 
 	int id = int(entity.x + 0.5);
 	if(isWater(entity)) {
-		RME = vec3(0.0, 1.0, 0.0);
+		RME = vec3(0.05, 1.0, 0.0);
 	} else if(isStainedGlass(entity)) {
-		RME.xy = vec2(0.0, 1.0);
+		RME.xy = vec2(0.05, 0.0);
 	} else if(id == 41 || id == 42 || id == 57 || id == 133) {
 		// Blocks of: Gold, Iron, Diamond, Emerald
 		RME.x = min(RME.x, 0.6);

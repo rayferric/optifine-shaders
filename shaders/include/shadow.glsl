@@ -3,7 +3,7 @@
 
 #include "encoding.glsl"
 #include "hash.glsl"
-#include "ray_march.glsl"
+#include "raymarch.glsl"
 
 // Defines precision gain towards the center of the shadow map in range (0.0, 1.0)
 #define SHADOW_MAP_DISTORTION_STRENGTH 0.8
@@ -95,7 +95,7 @@ vec3 getShadowColor(in sampler2D shadowTex, in sampler2D shadowTexOpaque, in sam
  *
  * @return shadow color
  */
-vec3 getVolumetricShadow(in sampler2D shadowTex, in sampler2D shadowTexOpaque, in sampler2D shadowColorTex, in vec3 viewPos, in vec3 normal, in vec3 lightDir) {
+vec3 getVolumetricShadow(in sampler2D shadowTex, in sampler2D shadowTexOpaque, in sampler2D shadowColorTex, in vec3 viewPos) {
 	vec3 shadowViewPos = (shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
 	vec3 shadowClipPos = projPos(shadowProjection, shadowViewPos);
 

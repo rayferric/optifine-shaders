@@ -1,8 +1,6 @@
 #ifndef PBR_GLSL
 #define PBR_GLSL
 
-#include "common.glsl"
-
 /**
  * Approximates fresnel factor using Schlick's method.
  *

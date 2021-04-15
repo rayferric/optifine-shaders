@@ -1,6 +1,7 @@
 #version 120
 
 #include "include/common.glsl"
+
 #include "include/material.glsl"
 #include "include/pbr.glsl"
 #include "include/shadow.glsl"
@@ -46,7 +47,7 @@ void main() {
 	float HdotV = max(dot(H, V), 0.0);
 
 	vec3 shadowColor = getSoftShadow(shadowtex0, shadowtex1, shadowcolor0, fragPos, N, L) * NdotL;
-	shadowColor *= getContactShadow(depthtex0, fragPos, L);
+	shadowColor *= getContactShadow(depthtex1, fragPos, L);
 	vec3 shadowContribution = cookTorrance(albedo, roughness, metallic, NdotV, NdotL, NdotH, HdotV);
 	vec3 shadowEnergy = (SUN_ENERGY * shadowColor) * shadowContribution;
 

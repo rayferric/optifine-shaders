@@ -1,6 +1,7 @@
 #version 120
 
 #include "include/common.glsl"
+
 #include "include/encoding.glsl"
 #include "include/material.glsl"
 

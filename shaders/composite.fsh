@@ -1,6 +1,7 @@
 #version 120
 
 #include "include/common.glsl"
+
 #include "include/material.glsl"
 #include "include/pbr.glsl"
 #include "include/shadow.glsl"
@@ -19,8 +20,6 @@ uniform sampler2D shadowtex1; // Opaque entities only
 uniform sampler2D shadowcolor0;
 
 void main() {
-	// Extract G-Buffer data
-	
 	vec3 N = decodeNormal(texture2D(colortex2, v_TexCoord).xy);
 
 	vec3 albedoOpacityRM = texture2D(colortex3, v_TexCoord).xyz;
@@ -51,9 +50,8 @@ void main() {
 		float NdotH = max(dot(N, H), 0.0);
 		float HdotV = max(dot(H, V), 0.0);
 
-		//vec3 shadowCoord = getShadowCoord(fragPos, dot(N, L));
-		//vec3 shadowFactor = getShadowColor(shadowtex0, shadowtex1, shadowcolor0, shadowCoord) * NdotL;
 		vec3 shadowColor = getSoftShadow(shadowtex0, shadowtex1, shadowcolor0, fragPos, N, L) * NdotL;
+		// shadowColor *= getContactShadow(depthtex1, fragPos, L);
 		vec3 shadowContribution = cookTorrance(albedo, roughness, metallic, NdotV, NdotL, NdotH, HdotV);
 		vec3 shadowEnergy = (SUN_ENERGY * shadowColor) * shadowContribution;
 

@@ -1,7 +1,6 @@
 #ifndef WAVE_GLSL
 #define WAVE_GLSL
 
-#include "common.glsl"
 #include "hash.glsl"
 #include "material.glsl"
 

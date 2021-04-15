@@ -1,6 +1,7 @@
 #version 120
 
 #include "include/common.glsl"
+
 #include "include/encoding.glsl"
 #include "include/material.glsl"
 
@@ -10,15 +11,16 @@ varying vec2 v_TexCoord;
 varying vec2 v_AmbientLight;
 varying mat3 v_TBN;
 
-uniform sampler2D       texture;
-uniform sampler2D       lightmap;
-uniform sampler2D       normals;
-uniform sampler2D       specular;
+uniform sampler2D texture;
+uniform sampler2D lightmap;
+uniform sampler2D normals;
+uniform sampler2D specular;
 uniform sampler2D shadowtex0; // All entities
 uniform sampler2D shadowtex1; // Opaque entities only
-uniform sampler2D       shadowcolor0;
+uniform sampler2D shadowcolor0;
 
 void main() {
+	// Albedo is sRGB
 	vec4 albedoOpacity = texture2D(texture, v_TexCoord) * v_Color;
 	albedoOpacity.xyz = gammaToLinear(albedoOpacity.xyz);
 	albedoOpacity = remapBlockAlbedoOpacity(albedoOpacity, v_Entity);
@@ -38,7 +40,7 @@ void main() {
 
 	// colortex2: Packed Normal
 	gl_FragData[0].xy = encodeNormal(N);
-	gl_FragData[0].w  = opacity;
+	gl_FragData[0].w  = isOpaque(v_Entity) ? opacity : 1.0;
 
 	// colortex3: Packed sRGB Albedo RG; Packed (sRGB Albedo B + Opacity); Packed (Roughness + Metallic)
 	vec3 albedoGamma = linearToGamma(albedo);
