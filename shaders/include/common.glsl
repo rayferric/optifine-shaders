@@ -1,6 +1,8 @@
 #ifndef COMMON_GLSL
 #define COMMON_GLSL
 
+// Common definitions available everywhere
+
 #extension GL_EXT_gpu_shader4 : enable
 
 #define PI       3.141593
@@ -21,6 +23,7 @@ uniform mat4 shadowProjectionInverse;
 uniform int   heldItemId;
 uniform int   heldItemId2;
 uniform int   worldTime;
+uniform int   frameCounter;
 uniform float frameTimeCounter;
 uniform float viewWidth;
 uniform float viewHeight;
@@ -94,17 +97,6 @@ uniform float far;
 // }
 
 /**
- * Converts color to perceptual grayscale value.
- *
- * @param color color
- *
- * @return grayscale value
- */
-float luma(in vec3 color) {
-	return dot(color, vec3(0.299, 0.587, 0.114));
-}
-
-/**
  * Transforms position using supplied matrix and performs perspective division. 
  *
  * @param projMatrix projection matrix
@@ -127,7 +119,8 @@ vec3 projPos(mat4 projMatrix, in vec3 pos) {
  */
 vec3 getFragPos(in vec2 coord, in sampler2D depthTex) {
 	float depth = texture2D(depthTex, coord).x;
-	return projPos(gbufferProjectionInverse, vec3(coord, depth) * 2.0 - 1.0);
+	vec2 temporalOffset = 
+	return projPos(gbufferProjectionInverse, vec3(coord - 0.05, depth) * 2.0 - 1.0);
 }
 
 /**

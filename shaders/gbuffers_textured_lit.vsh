@@ -1,6 +1,8 @@
 #version 120
 
 #include "include/common.glsl"
+
+#include "include/temporal.glsl"
 #include "include/wave.glsl"
 
 attribute vec3 mc_Entity;
@@ -34,4 +36,7 @@ void main() {
 
 	vec3 vertexPos = waveBlock(gl_Vertex.xyz, mc_Entity, mc_midTexCoord.y > gl_MultiTexCoord0.y);
 	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(vertexPos, 1.0);
+	gl_Position.xy /= gl_Position.w;
+	gl_Position.xy += getTemporalOffset(false);
+	gl_Position.xy *= gl_Position.w;
 }

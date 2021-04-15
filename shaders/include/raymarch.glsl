@@ -1,5 +1,5 @@
-#ifndef RAY_MARCH_GLSL
-#define RAY_MARCH_GLSL
+#ifndef RAYMARCH_GLSL
+#define RAYMARCH_GLSL
 
 // Call this once origin is behind the depth buffer
 // void binaryRefine(inout vec3 origin, inout float depth, in sampler2D depthTex, in vec3 dir) {
@@ -128,7 +128,7 @@ RayMarchResult rayMarch(
 		if (rayDepth < near || rayDepth > far)
 			break;
 
-		float sampleDepth = getLinearDepth(texture2D(depthTex, screen).x);
+		float sampleDepth = getLinearDepth(texture2D(depthTex, screen + 0.05).x);
 
 		// When we reach behind the depth buffer...
 		// (This block is terminal)
@@ -151,7 +151,7 @@ RayMarchResult rayMarch(
 				screen = mix(screenStart, screenEnd, progress);
 
 				rayDepth    = -(homoZ / invW);
-				sampleDepth = getLinearDepth(texture2D(depthTex, screen).x);
+				sampleDepth = getLinearDepth(texture2D(depthTex, screen + 0.05).x);
 
 				inFront = sampleDepth > rayDepth;
 
@@ -171,4 +171,4 @@ RayMarchResult rayMarch(
 	return RayMarchResult(false, vec2(0.0));
 }
 
-#endif // RAY_MARCH_GLSL
+#endif // RAYMARCH_GLSL
