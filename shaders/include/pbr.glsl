@@ -4,49 +4,36 @@
 /**
  * Approximates fresnel factor using Schlick's method.
  *
- * @param cosTheta cosine of the angle
+ * @param NdotV non-negative cosine of the view angle
  *
  * @return fresnel factor
  */
-float fresnelSchlickFactor(in float cosTheta) {
-	return pow(1.0 - cosTheta, 5.0);
+float fresnelSchlickFactor(in float NdotV) {
+	return pow(1.0 - NdotV, 5.0);
 }
 
 /**
  * Applies Schlick's fresnel factor to specularity.
  *
- * @param cosTheta cosine of the angle
- * @param specular specularity
- *
- * @return angle-dependent specularity
- */
-vec3 fresnelSchlick(in float cosTheta, in vec3 specular) {
-	return mix(specular, vec3(1.0), fresnelSchlickFactor(cosTheta));
-}
-
-/**
- * Applies Schlick's fresnel factor to specularity
- * value while accounting for roughness.
- *
- * @param cosTheta  cosine of the angle
+ * @param NdotV     non-negative cosine of the view angle
  * @param specular  specularity
  * @param roughness material roughness
  *
  * @return angle-dependent specularity
  */
-vec3 fresnelSchlick(in float cosTheta, in vec3 specular, in float roughness) {
-	return mix(specular, max(vec3(1.0 - roughness), specular), fresnelSchlickFactor(cosTheta));
+vec3 fresnelSchlick(in float NdotV, in vec3 specular, in float roughness) {
+	return mix(specular, max(vec3(1.0 - roughness), specular), fresnelSchlickFactor(NdotV));
 }
 
 /**
  * Computes GGX (Trowbridge-Reitz) normal distribution.
  *
- * @param cosTheta cosine of the angle
+ * @param NdotH     non-negative cosine of the halfway angle
  * @param roughness material roughness
  *
  * @return normal distribution
  */
-float distributionGGX(in float cosTheta, in float roughness) {
+float distributionGGX(in float NdotH, in float roughness) {
 	float r2 = roughness * roughness;
 	float r4 = r2 * r2;
 	float d = mix(1.0, r4, cosTheta * cosTheta);
@@ -57,7 +44,7 @@ float distributionGGX(in float cosTheta, in float roughness) {
  * Single term for Smith's geometric shadowing
  * approximation function below: Schlick-GGX.
  *
- * @param cosTheta  cosine of the angle
+ * @param cosTheta  non-negative cosine of the angle
  * @param roughness material roughness
  *
  * @return partial value
@@ -70,8 +57,8 @@ float geometrySmithG1(in float cosTheta, in float roughness) {
  * Approximates geometric shadowing using
  * Smith's method with Schlick-GGX terms.
  *
- * @param NdotV     cosine of the view angle
- * @param NdotL     cosine of the shadow angle
+ * @param NdotV     non-negative cosine of the view angle
+ * @param NdotL     non-negative cosine of the shadow angle
  * @param roughness material roughness
  *
  * @return Geometric shadowing
@@ -88,16 +75,16 @@ float geometrySmith(in float NdotV, in float NdotL, in float roughness) {
  * @param albedo    material albedo
  * @param roughness material roughness
  * @param metallic  material metallic factor
- * @param NdotV     cosine of the view angle
- * @param NdotL     cosine of the shadow angle
- * @param NdotH     cosine of the normal-halfway angle
- * @param HdotV     cosine of the halfway-view angle
+ * @param NdotV     non-negative cosine of the view angle
+ * @param NdotL     non-negative cosine of the shadow angle
+ * @param NdotH     non-negative cosine of the normal-halfway angle
+ * @param HdotV     non-negative cosine of the halfway-view angle
  *
  * @return light contribution
  */
 vec3 cookTorrance(in vec3 albedo, in float roughness, in float metallic, in float NdotV, in float NdotL, in float NdotH, in float HdotV) {
 	vec3 specular = mix(vec3(0.04), albedo, metallic);
-	specular = fresnelSchlick(HdotV, specular);
+	specular = fresnelSchlick(HdotV, specular, roughness);
 
 	float D = distributionGGX(NdotH, roughness);
 	float G = geometrySmith(NdotV, NdotL, roughness);

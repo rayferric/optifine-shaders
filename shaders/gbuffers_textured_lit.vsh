@@ -2,7 +2,7 @@
 
 #include "include/common.glsl"
 
-#include "include/temporal.glsl"
+#include "include/temporal_jitter.glsl"
 #include "include/wave.glsl"
 
 attribute vec3 mc_Entity;
@@ -37,6 +37,7 @@ void main() {
 	vec3 vertexPos = waveBlock(gl_Vertex.xyz, mc_Entity, mc_midTexCoord.y > gl_MultiTexCoord0.y);
 	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(vertexPos, 1.0);
 	gl_Position.xy /= gl_Position.w;
-	gl_Position.xy += getTemporalOffset(false);
+	// Multiply by 2 to convert from screen space to NDC
+	gl_Position.xy += getTemporalOffset(false) * 2.0;
 	gl_Position.xy *= gl_Position.w;
 }

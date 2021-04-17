@@ -16,10 +16,7 @@
 #define CONTACT_SHADOW_VIEW_DISTANCE 5.0
 #define CONTACT_SHADOW_FADE_DISTANCE 2.0
 
-float getContactShadow(
-		in sampler2D depthTex,
-		in vec3      viewPos,
-		in vec3      lightDir) {
+float getContactShadow(in vec3 viewPos, in vec3 lightDir) {
 #if CONTACT_SHADOW_SAMPLES != 0
 	float cutoffDistance = CONTACT_SHADOW_VIEW_DISTANCE + CONTACT_SHADOW_FADE_DISTANCE;
 
@@ -27,7 +24,7 @@ float getContactShadow(
 		float stepLen = CONTACT_SHADOW_RAY_LENGTH / float(CONTACT_SHADOW_SAMPLES);
 		
 		RayMarchResult result = rayMarch(
-				depthTex, viewPos, lightDir,
+				depthtex0, viewPos, lightDir,
 				CONTACT_SHADOW_RAY_LENGTH,
 				CONTACT_SHADOW_BIAS,
 				CONTACT_SHADOW_SAMPLES,
@@ -66,18 +63,15 @@ float getShadowBias(in vec3 normal, in vec3 lightDir, in float distortionFactor)
 /**
  * Computes colored shadow intensity factor.
  *
- * @param shadowTex       shadow depth texture (all objects)
- * @param shadowTexOpaque shadow depth texture (only opaque)
- * @param shadowColorTex  shadow color texture
  * @param shadowCoord     shadow coordinate
  *
  * @return shadow color
  */
-vec3 getShadowColor(in sampler2D shadowTex, in sampler2D shadowTexOpaque, in sampler2D shadowColorTex, in vec3 shadowCoord) {
-	float shading       = step(shadowCoord.z, texture2D(shadowTex, shadowCoord.xy).x);
-	float opaqueShading = step(shadowCoord.z, texture2D(shadowTexOpaque, shadowCoord.xy).x);
+vec3 getShadowColor(in vec3 shadowCoord) {
+	float shading       = step(shadowCoord.z, texture2D(shadowtex0, shadowCoord.xy).x);
+	float opaqueShading = step(shadowCoord.z, texture2D(shadowtex1, shadowCoord.xy).x);
 
-	vec3 shadowColor = gammaToLinear(texture2D(shadowColorTex, shadowCoord.xy).xyz);
+	vec3 shadowColor = gammaToLinear(texture2D(shadowcolor0, shadowCoord.xy).xyz);
 
 	return (opaqueShading - shading) * shadowColor + shading;
 }
@@ -88,14 +82,11 @@ vec3 getShadowColor(in sampler2D shadowTex, in sampler2D shadowTexOpaque, in sam
  * Computes unfiltered, unbiased shadow
  * for the purpose of volumetric effects.
  *
- * @param shadowTex       shadow depth texture (all objects)
- * @param shadowTexOpaque shadow depth texture (only opaque)
- * @param shadowColorTex  shadow color texture
  * @param viewPos         sample position in view space
  *
  * @return shadow color
  */
-vec3 getVolumetricShadow(in sampler2D shadowTex, in sampler2D shadowTexOpaque, in sampler2D shadowColorTex, in vec3 viewPos) {
+vec3 getVolumetricShadow(in vec3 viewPos) {
 	vec3 shadowViewPos = (shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
 	vec3 shadowClipPos = projPos(shadowProjection, shadowViewPos);
 
@@ -104,9 +95,9 @@ vec3 getVolumetricShadow(in sampler2D shadowTex, in sampler2D shadowTexOpaque, i
 	vec3 shadowCoord = shadowClipPos * 0.5 + 0.5;
 
 	#ifdef COLORED_VOLUMETRICS
-		return getShadowColor(shadowTex, shadowTexOpaque, shadowColorTex, shadowCoord);
+		return getShadowColor(shadowCoord);
 	#else
-		return step(shadowCoord.z, texture2D(shadowTex, shadowCoord.xy).x);
+		return step(shadowCoord.z, texture2D(shadowtex0, shadowCoord.xy).x);
 	#endif
 }
 
@@ -115,13 +106,7 @@ vec3 getVolumetricShadow(in sampler2D shadowTex, in sampler2D shadowTexOpaque, i
 #define SHADOW_MAX_PENUMBRA 0.2 // In meters
 #define SHADOW_SUN_ANGULAR_RADIUS (0.0087 * 4.0) // In radians, not physically accurate
 
-vec3 getSoftShadow(
-		in sampler2D shadowTex,
-		in sampler2D shadowTexOpaque,
-		in sampler2D shadowColorTex,
-		in vec3      viewPos,
-		in vec3      normal,
-		in vec3      lightDir) {
+vec3 getSoftShadow(in vec3 viewPos, in vec3 normal, in vec3 lightDir) {
 	// Transform position to shadow camera space and compute bias
 
 	float cosTheta = dot(normal, lightDir);
@@ -144,7 +129,7 @@ vec3 getSoftShadow(
 		offsetShadowClipPos *= getShadowDistortionFactor(offsetShadowClipPos);
 		vec2 shadowUv = offsetShadowClipPos * 0.5 + 0.5;
 
-		float occluderDepth = texture2D(shadowTex, shadowUv).x;
+		float occluderDepth = texture2D(shadowtex0, shadowUv).x;
 		float inShadow = step(occluderDepth, shadowDepth);
 		occlusionDepth += occluderDepth * inShadow;
 		occludedSamples += inShadow;
@@ -171,9 +156,9 @@ vec3 getSoftShadow(
 		vec3 shadowCoord = vec3(offsetShadowClipPos * 0.5 + 0.5, shadowDepth);
 
 		#ifdef COLORED_SHADOW
-			color += getShadowColor(shadowTex, shadowTexOpaque, shadowColorTex, shadowCoord);
+			color += getShadowColor(shadowCoord);
 		#else
-			color += step(shadowCoord.z, texture2D(shadowTex, shadowCoord.xy).x);
+			color += step(shadowCoord.z, texture2D(shadowtex0, shadowCoord.xy).x);
 		#endif
 	}
 	return color / float(SOFT_SHADOW_SAMPLES);

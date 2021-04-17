@@ -12,7 +12,6 @@ varying vec2 v_AmbientLight;
 varying mat3 v_TBN;
 
 uniform sampler2D texture;
-uniform sampler2D lightmap;
 uniform sampler2D normals;
 uniform sampler2D specular;
 uniform sampler2D shadowtex0; // All entities
