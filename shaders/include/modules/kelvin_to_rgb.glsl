@@ -10,7 +10,7 @@
  *
  * @return RGB tint value
  */
-vec3 kelvinToRGB(in float kelvin) {
+vec3 kelvinToRgb(in float kelvin) {
 	float scaled = clamp(kelvin, 1000.0, 40000.0) * 0.01;
 	
 	vec3 rgb;

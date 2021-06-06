@@ -1,7 +1,7 @@
 #ifndef TEMPORAL_JITTER_GLSL
 #define TEMPORAL_JITTER_GLSL
 
-#include "/include/functions/hash.glsl"
+#include "/include/modules/hash.glsl"
 
 // Maximum offset length in pixels
 #define TEMPORAL_JITTER_RADIUS 0.5

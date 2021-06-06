@@ -1,9 +1,9 @@
 #ifndef SHADOW_GLSL
 #define SHADOW_GLSL
 
-#include "encoding.glsl"
-#include "hash.glsl"
-#include "raymarch.glsl"
+#include "/include/modules/encode.glsl"
+#include "/include/modules/hash.glsl"
+#include "/include/modules/raymarch.glsl"
 
 // Defines precision gain towards the center of the shadow map in range (0.0, 1.0)
 #define SHADOW_MAP_DISTORTION_STRENGTH 0.8
@@ -16,7 +16,7 @@
 #define CONTACT_SHADOW_VIEW_DISTANCE 5.0
 #define CONTACT_SHADOW_FADE_DISTANCE 2.0
 
-float getContactShadow(in vec3 viewPos, in vec3 lightDir) {
+float contactShadow(in vec3 viewPos, in vec3 lightDir) {
 #if CONTACT_SHADOW_SAMPLES != 0
 	float cutoffDistance = CONTACT_SHADOW_VIEW_DISTANCE + CONTACT_SHADOW_FADE_DISTANCE;
 
@@ -24,7 +24,7 @@ float getContactShadow(in vec3 viewPos, in vec3 lightDir) {
 		float stepLen = CONTACT_SHADOW_RAY_LENGTH / float(CONTACT_SHADOW_SAMPLES);
 		
 		RayMarchResult result = rayMarch(
-				depthtex0, viewPos, lightDir,
+				depthtex1, viewPos, lightDir,
 				CONTACT_SHADOW_RAY_LENGTH,
 				CONTACT_SHADOW_BIAS,
 				CONTACT_SHADOW_SAMPLES,
@@ -82,11 +82,15 @@ vec3 getShadowColor(in vec3 shadowCoord) {
  * Computes unfiltered, unbiased shadow
  * for the purpose of volumetric effects.
  *
- * @param viewPos         sample position in view space
+ * @param viewPos sample position in view space
  *
  * @return shadow color
  */
 vec3 getVolumetricShadow(in vec3 viewPos) {
+	// TODO: We could trace volumetric fog in
+	// shadow clip space for enhanced performance,
+	// see: /include/modules/raymarch.glsl
+
 	vec3 shadowViewPos = (shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
 	vec3 shadowClipPos = projPos(shadowProjection, shadowViewPos);
 
@@ -106,7 +110,7 @@ vec3 getVolumetricShadow(in vec3 viewPos) {
 #define SHADOW_MAX_PENUMBRA 0.2 // In meters
 #define SHADOW_SUN_ANGULAR_RADIUS (0.0087 * 4.0) // In radians, not physically accurate
 
-vec3 getSoftShadow(in vec3 viewPos, in vec3 normal, in vec3 lightDir) {
+vec3 softShadow(in vec3 viewPos, in vec3 normal, in vec3 lightDir) {
 	// Transform position to shadow camera space and compute bias
 
 	float cosTheta = dot(normal, lightDir);

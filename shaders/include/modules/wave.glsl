@@ -1,8 +1,8 @@
 #ifndef WAVE_GLSL
 #define WAVE_GLSL
 
-#include "hash.glsl"
-#include "material.glsl"
+#include "/include/modules/blocks.glsl"
+#include "/include/modules/hash.glsl"
 
 vec3 wave(in vec3 phaseSeed, in float freq) {
 	float scaledTime = frameTimeCounter * freq * WAVING_FREQUENCY;

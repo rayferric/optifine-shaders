@@ -46,8 +46,8 @@ void main() {
 	float NdotH = max(dot(N, H), 0.0);
 	float HdotV = max(dot(H, V), 0.0);
 
-	vec3 shadowColor = getSoftShadow(shadowtex0, shadowtex1, shadowcolor0, fragPos, N, L) * NdotL;
-	shadowColor *= getContactShadow(fragPos, L);
+	vec3 shadowColor = softShadow(shadowtex0, shadowtex1, shadowcolor0, fragPos, N, L) * NdotL;
+	shadowColor *= contactShadow(fragPos, L);
 	vec3 shadowContribution = cookTorrance(albedo, roughness, metallic, NdotV, NdotL, NdotH, HdotV);
 	vec3 shadowEnergy = (SUN_ENERGY * shadowColor) * shadowContribution;
 

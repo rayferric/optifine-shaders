@@ -20,9 +20,13 @@ void main() {
 
 #ifdef FSH
 
-#include "/include/modules/gamma.glsl"
-#include "/include/modules/luminance.glsl"
-#include "/include/modules/tonemap.glsl"
+#include "include/modules/encode.glsl"
+#include "include/modules/gamma.glsl"
+#include "include/modules/material_mask.glsl"
+#include "include/modules/pbr.glsl"
+#include "include/modules/screen_to_view.glsl"
+#include "include/modules/shadow.glsl"
+#include "include/modules/ssao.glsl"
 
 void main() {
 	vec3 hdr = texture2D(colortex1, v_TexCoord).xyz;

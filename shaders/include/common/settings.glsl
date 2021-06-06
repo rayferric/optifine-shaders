@@ -1,5 +1,3 @@
-// Adjustable Settings
-
 // Post-Processing
 #define EXPOSURE   0.0 // [-2.0 -1.0 0.0 1.0 2.0]
 #define GAMMA      1.0 // [0.5 0.75 1.0 1.25 1.5]
@@ -28,15 +26,3 @@ const int shadowMapResolution =    2048; // [1024 2048 4096]
 #define WAVING_FIRE
 #define WAVING_SINGLE_PLANTS
 #define WAVING_MULTI_PLANTS
-
-// Non-Adjustable Settings
-
-const float shadowDistance          = 120.0; // 120.0 is the sweet spot
-const float shadowDistanceRenderMul = 1.0;   // Required to work with shadowDistance
-const bool 	shadowHardwareFiltering = false; // Must be disabled in order to have plain sampler2D shadow textures
-const float	sunPathRotation	        = -45.0; // The sun indicates south at noon
-
-#define SUN_ILLUMINANCE      128000.0 // https://en.wikipedia.org/wiki/Sunlight#Intensity_in_the_Solar_System
-#define MOON_ILLUMINANCE     0.32     // https://en.wikipedia.org/wiki/Moonlight#Illumination
-#define TORCH_ILLUMINANCE    8.0
-#define EMISSION_ILLUMINANCE 1.0

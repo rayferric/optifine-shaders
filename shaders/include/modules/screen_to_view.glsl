@@ -1,10 +1,11 @@
 #ifndef SCREEN_TO_VIEW_GLSL
 #define SCREEN_TO_VIEW_GLSL
 
-#include "/include/functions/temporal_jitter.glsl"
+#include "/include/modules/temporal_jitter.glsl"
 
 /**
- * Converts screen space to view space.
+ * Converts screen space 2D coordinates
+ * to view space position.
  *
  * @param screenPos screen space position
  * @param depthTex  depth buffer to sample

@@ -4,6 +4,5 @@
 #define OVERWORLD
 
 #include "/include/common/common_deferred.glsl"
-#include "/include/common/vertex_attributes.glsl"
 
-#include "/include/programs/final.glsl"
+#include "/include/programs/composite.glsl"
