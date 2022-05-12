@@ -5,6 +5,7 @@ uniform mat4 gbufferProjection;
 uniform mat4 gbufferPreviousProjection;
 uniform mat4 gbufferProjectionInverse;
 uniform mat4 shadowModelView;
+uniform mat4 shadowModelViewInverse;
 uniform mat4 shadowProjection;
 uniform mat4 shadowProjectionInverse;
 

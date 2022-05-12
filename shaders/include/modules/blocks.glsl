@@ -121,10 +121,10 @@ bool isStainedGlass(in vec3 entity) {
  *
  * @return true if water, ice or stained glass
  */
-bool isOpaque(in vec3 entity) {
+bool isTranslucent(in vec3 entity) {
 	int id = int(entity.x + 0.5);
 	// Flowing Water; Still Water; Ice; Stained Glass; Stained Glass Pane
-	return id != 8 && id != 9 && id != 79 && id != 95 && id != 160;
+	return id == 8 || id == 9 || id == 79 || id == 95 || id == 160;
 }
 
 /**

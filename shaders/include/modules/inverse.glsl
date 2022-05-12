@@ -5,7 +5,7 @@
  * Computes the inverse of a matrix.
  * This function normally requires "#version 140" or later to be globally defined.
  *
- * param m matrix to invert
+ * @param m matrix to invert
  *
  * @return m<sup>-1</sup>
  */

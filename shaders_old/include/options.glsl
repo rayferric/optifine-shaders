@@ -19,7 +19,6 @@ const int shadowMapResolution = 2048; // [512 1024 2048 3072 4096]
 
 // Non-adjustable options
 
-
 const float shadowDistance          = 120.0; // 120.0 is the sweet spot
 const float shadowDistanceRenderMul = 1.0;   // Required to work with shadowDistance
 const bool 	shadowHardwareFiltering = true;  // Must be enabled in order to use shadow2D()

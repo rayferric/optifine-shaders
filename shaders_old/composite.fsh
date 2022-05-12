@@ -147,7 +147,6 @@ void main() {
 		color += F * reflectionEnergy;
 	}
 
-
 	// Ambient transmitted energy
 	if(mask.isTranslucent) {
 		// TODO Use Du-Dv maps instead (animated for water)

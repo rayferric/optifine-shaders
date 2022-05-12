@@ -1,6 +1,7 @@
 screen.POST_PROCESSING=Post-Processing
 screen.SHADING=Shading
 screen.WAVING=Waving
+screen.DEBUG=Debug
 
 option.EXPOSURE=Exposure
 option.EXPOSURE.comment=Exposure correction. Higher values give brighter image. No performance impact.
@@ -50,6 +51,9 @@ option.WAVING_SINGLE_PLANTS=Waving Single-Plants
 option.WAVING_SINGLE_PLANTS.comment=Single-block plant wave displacement. Low performance impact.
 option.WAVING_MULTI_PLANTS=Waving Multi-Plants
 option.WAVING_MULTI_PLANTS.comment=Multi-block plant wave displacement. Low performance impact.
+
+option.SHOW_DEBUG_OUTPUT=Show Debug Output
+option.SHOW_DEBUG_OUTPUT.comment=Override shader stages to show debug buffer contents.
 
 value.shadowMapResolution.1024=Low
 value.shadowMapResolution.2048=Medium

@@ -20,23 +20,28 @@ void main() {
 
 #ifdef FSH
 
+// #include "/include/modules/bloom.glsl"
 #include "/include/modules/gamma.glsl"
 #include "/include/modules/luminance.glsl"
 #include "/include/modules/tonemap.glsl"
 
+/* DRAWBUFFERS:1 */
+
+// Reading temporal history and mipmapping for bloom
+
 void main() {
-	vec3 color = texture2D(colortex1, v_TexCoord).xyz;
+	vec3 color; // LDR temporal history
 
-	color = pow(color, vec3(GAMMA));
-	color = clamp(mix(vec3(luminance(color)), color, SATURATION), 0.0, 1.0);
-	color = clamp(mix(vec3(0.5), color, CONTRAST), 0.0, 1.0);
+	// This one pixel stores scene brightness data
+	if (gl_FragCoord.x < 1.0 && gl_FragCoord.y < 1.0)
+		color = texture2D(colortex0, v_TexCoord + vec2(1.0 / viewWidth, 0)).xyz;
+	else
+		color = texture2D(colortex0, v_TexCoord).xyz;
 	
-	gl_FragData[0].xyz = linearToGamma(color);
+	color = gammaToLinear(color);
+	
+	gl_FragData[0].xyz = color;
 	gl_FragData[0].w   = 1.0;
-
-#ifdef SHOW_DEBUG_OUTPUT
-	gl_FragData[0] = texture2D(colortex7, v_TexCoord);
-#endif
 }
 
 #endif // FSH

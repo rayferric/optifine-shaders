@@ -30,9 +30,9 @@ vec3 remapBlockRme(in vec3 rme, in vec3 entity) {
 
 	int id = int(entity.x + 0.5);
 	if(isWater(entity)) {
-		rme = vec3(0.05, 1.0, 0.0);
+		rme = vec3(0.005, 1.0, 0.0);
 	} else if(isStainedGlass(entity)) {
-		rme.xy = vec2(0.05, 0.0);
+		rme.xy = vec2(0.005, 0.0);
 	} else if(id == 41 || id == 42 || id == 57 || id == 133) {
 		// Blocks of: Gold, Iron, Diamond, Emerald
 		rme.x = min(rme.x, 0.6);

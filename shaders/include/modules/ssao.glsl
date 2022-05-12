@@ -30,7 +30,7 @@ float computeSsao(in vec3 viewPos, in vec3 normal, in sampler2D depthTex) {
 		vec3 samplePos = viewPos + (unitOffset * SSAO_RADIUS);
 		vec2 coord = normalizedMul(gbufferProjection, samplePos).xy * 0.5 + 0.5;
 		
-		vec2 temporalOffset = getTemporalOffset(false);
+		vec2 temporalOffset = getTemporalOffset();
 		float bufferDistance = linearizeDepth(texture2D(depthTex, coord + temporalOffset).x);
 		float rangeFactor = smoothstep(0.0, 1.0, SSAO_RADIUS / distance(bufferDistance, -samplePos.z));
 		aoStrength += float(bufferDistance < -samplePos.z) * rangeFactor;

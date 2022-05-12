@@ -21,7 +21,7 @@ void main() {
 
 	v_AmbientLight = (gl_TextureMatrix[1] * gl_MultiTexCoord1).yx;
 	v_AmbientLight = (v_AmbientLight - 0.025) / 0.975;
-	v_AmbientLight = pow(v_AmbientLight, vec2(3.0, 6.0));
+	v_AmbientLight = pow(v_AmbientLight, vec2(SKY_FALLOFF, TORCH_FALLOFF));
 
 	vec3 normal = gl_NormalMatrix * gl_Normal;
 	vec3 tangent = normalize(gl_NormalMatrix * at_tangent.xyz);

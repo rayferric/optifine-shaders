@@ -8,7 +8,7 @@
  */
 struct MaterialMask {
 	bool isLit;
-	bool isOpaque;
+	bool isTranslucent;
 	bool isHand;
 };
 
@@ -22,7 +22,7 @@ struct MaterialMask {
 float encodeMask(in MaterialMask mask) {
 	int i = 0;
 	i |= int(mask.isLit)    << 0;
-	i |= int(mask.isOpaque) << 1;
+	i |= int(mask.isTranslucent) << 1;
 	i |= int(mask.isHand)   << 2;
 	return i / 255.0; // Minimum 8-bit buffer is required
 }
@@ -38,9 +38,18 @@ MaterialMask decodeMask(in float value) {
 	int i = int(value * 255.0 + 0.5);
 	MaterialMask mask;
 	mask.isLit    = bool((i >> 0) & 1);
-	mask.isOpaque = bool((i >> 1) & 1);
+	mask.isTranslucent = bool((i >> 1) & 1);
 	mask.isHand   = bool((i >> 2) & 1);
 	return mask;
+}
+
+/**
+ * Constructs hand material mask.
+ *
+ * @return material mask
+ */
+MaterialMask makeHandMask() {
+	return MaterialMask(true, false, true);
 }
 
 /**
@@ -62,7 +71,7 @@ MaterialMask makeUnlitMask() {
 MaterialMask makeLitMask(in vec3 entity) {
 	MaterialMask mask;
 	mask.isLit    = true;
-	mask.isOpaque = isOpaque(entity);
+	mask.isTranslucent = isTranslucent(entity);
 	mask.isHand   = false;
 	return mask;
 }

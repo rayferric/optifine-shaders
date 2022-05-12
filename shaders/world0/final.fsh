@@ -1,6 +1,6 @@
 #version 120
 
-#define VSH
+#define FSH
 #define OVERWORLD
 
 #include "/include/common/common_deferred.glsl"

@@ -37,3 +37,6 @@ uniform sampler2D colortex3;
 // Gamma-Space Torch Light;
 // Material ID
 uniform sampler2D colortex4;
+
+// Debug Output
+uniform sampler2D colortex7;

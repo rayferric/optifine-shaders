@@ -13,8 +13,8 @@ const int shadowMapResolution =    2048; // [1024 2048 4096]
 #define   SUN_TEMPERATURE          5800  // [5200 5500 5800 6100 6400] // 5777 -> https://en.wikipedia.org/wiki/Sun#Photosphere
 #define   MOON_TEMPERATURE         4100  // [3500 3800 4100 4400 4700] // 4100 -> https://physics.stackexchange.com/questions/244922/why-does-moonlight-have-a-lower-color-temperature
 #define   TORCH_TEMPERATURE        2300  // [1700 2000 2300 2600 2900]
-#define   TORCH_FALLOFF            8.0   // [4.0 6.0 8.0 12.0 16.0]
-#define   SKY_FALLOFF              8.0   // [1.0 2.0 4.0 6.0 8.0 12.0 16.0]
+#define   TORCH_FALLOFF            4.0   // [4.0 6.0 8.0 12.0 16.0]
+#define   SKY_FALLOFF              2.0   // [1.0 2.0 4.0 6.0 8.0 12.0 16.0]
 #define   SSAO_SAMPLES             8     // [0 4 8 16 32] // TODO: Hardcode once TAA is implemented
 
 // Waving
@@ -26,3 +26,6 @@ const int shadowMapResolution =    2048; // [1024 2048 4096]
 #define WAVING_FIRE
 #define WAVING_SINGLE_PLANTS
 #define WAVING_MULTI_PLANTS
+
+// Debug
+#define SHOW_DEBUG_OUTPUT

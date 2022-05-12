@@ -3,55 +3,36 @@
 
 #include "/include/modules/encode.glsl"
 #include "/include/modules/hash.glsl"
+#include "/include/modules/normalized_mul.glsl"
 #include "/include/modules/raymarch.glsl"
-
-// Defines precision gain towards the center of the shadow map in range (0.0, 1.0)
-#define SHADOW_MAP_DISTORTION_STRENGTH 0.8
-// How much the distorted shadow map is stretched to a rectangular shape [1.0 - inf)
-#define SHADOW_MAP_DISTORTION_STRETCH  12.0
+#include "/include/modules/shadow_distortion.glsl"
 
 #define CONTACT_SHADOW_RAY_LENGTH    0.3  // Ray marching distance
 #define CONTACT_SHADOW_BIAS          0.02 // Offset ray origin to avoid self-shading at grazing angles
 #define CONTACT_SHADOW_TOLERANCE     0.05 // Max Z difference to score a hit
-#define CONTACT_SHADOW_VIEW_DISTANCE 5.0
+#define CONTACT_SHADOW_VIEW_DISTANCE 12.0
 #define CONTACT_SHADOW_FADE_DISTANCE 2.0
+
+#define SHADOW_FADE_DISTANCE 50.0
 
 float contactShadow(in vec3 viewPos, in vec3 lightDir) {
 #if CONTACT_SHADOW_SAMPLES != 0
-	float cutoffDistance = CONTACT_SHADOW_VIEW_DISTANCE + CONTACT_SHADOW_FADE_DISTANCE;
-
-	if (-viewPos.z < cutoffDistance) {
-		float stepLen = CONTACT_SHADOW_RAY_LENGTH / float(CONTACT_SHADOW_SAMPLES);
-		
+	if (-viewPos.z < CONTACT_SHADOW_VIEW_DISTANCE) {
 		RayMarchResult result = rayMarch(
 				depthtex1, viewPos, lightDir,
 				CONTACT_SHADOW_RAY_LENGTH,
 				CONTACT_SHADOW_BIAS,
 				CONTACT_SHADOW_SAMPLES,
+				CONTACT_SHADOW_TOLERANCE,
 				CONTACT_SHADOW_TOLERANCE);
 
-		float opacity = 1.0 - smoothstep(CONTACT_SHADOW_VIEW_DISTANCE,
-				cutoffDistance, -viewPos.z);
+		float opacity = 1.0 - smoothstep(CONTACT_SHADOW_VIEW_DISTANCE - CONTACT_SHADOW_FADE_DISTANCE,
+				CONTACT_SHADOW_VIEW_DISTANCE, -viewPos.z);
 
 		return 1.0 - float(result.hasHit) * opacity;
 	}
 #endif
 	return 1.0;
-}
-
-/**
- * Computes vertex position scaling factor used
- * to direct more texels to areas close to camera.
- *
- * @param pos undistorted position
- *
- * @return scaling factor, multiply it by pos to get remapped coordinate
- */
-float getShadowDistortionFactor(in vec2 pos) {
-	vec2 p = pow(abs(pos), vec2(SHADOW_MAP_DISTORTION_STRETCH));
-	float d = pow(p.x + p.y, 1.0 / SHADOW_MAP_DISTORTION_STRETCH);
-	d = mix(1.0, d, SHADOW_MAP_DISTORTION_STRENGTH);
-	return 1.0 / d;
 }
 
 float getShadowBias(in vec3 normal, in vec3 lightDir, in float distortionFactor) {
@@ -92,11 +73,14 @@ vec3 getVolumetricShadow(in vec3 viewPos) {
 	// see: /include/modules/raymarch.glsl
 
 	vec3 shadowViewPos = (shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
-	vec3 shadowClipPos = projPos(shadowProjection, shadowViewPos);
+	vec3 shadowClipPos = normalizedMul(shadowProjection, shadowViewPos);
 
 	float distortionFactor = getShadowDistortionFactor(shadowClipPos.xy);
 	shadowClipPos.xy *= distortionFactor;
 	vec3 shadowCoord = shadowClipPos * 0.5 + 0.5;
+
+	// if (!isInsideRect(shadowCoord.xy, vec2(0.0), vec2(1.0)))
+	// 		return vec3(1.0);
 
 	#ifdef COLORED_VOLUMETRICS
 		return getShadowColor(shadowCoord);
@@ -114,11 +98,17 @@ vec3 softShadow(in vec3 viewPos, in vec3 normal, in vec3 lightDir) {
 	// Transform position to shadow camera space and compute bias
 
 	float cosTheta = dot(normal, lightDir);
-	vec3 shadowViewPos = (shadowModelView * gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
-	vec3 shadowClipPos = projPos(shadowProjection, shadowViewPos);
+	vec3 worldPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
+	vec3 shadowViewPos = (shadowModelView * vec4(worldPos, 1.0)).xyz;
+	vec3 shadowClipPos = normalizedMul(shadowProjection, shadowViewPos);
 	float distortionFactor = getShadowDistortionFactor(shadowClipPos.xy);
 	float bias = getShadowBias(normal, lightDir, distortionFactor);
 	float shadowDepth = shadowClipPos.z * 0.5 + 0.5 - bias;
+
+	float opacity = 1.0 - smoothstep(250.0 - SHADOW_FADE_DISTANCE, 250.0, -shadowViewPos.z);
+	opacity *= 1.0 - smoothstep(shadowDistance - SHADOW_FADE_DISTANCE, shadowDistance, length(worldPos.xy));
+	if (opacity < EPSILON)
+		return vec3(1.0);		
 
 	// Inverse shadow camera extents
 	vec2 shadowProjScale = vec2(shadowProjection[0][0], shadowProjection[1][1]);
@@ -141,7 +131,7 @@ vec3 softShadow(in vec3 viewPos, in vec3 normal, in vec3 lightDir) {
 	occlusionDepth /= occludedSamples;
 
 	// Convert occluder depth to occlusion distance and compute penumbra radius
-	float occluderShadowViewPosZ = projPos(shadowProjectionInverse, vec3(0.0, 0.0, occlusionDepth * 2.0 - 1.0)).z;
+	float occluderShadowViewPosZ = normalizedMul(shadowProjectionInverse, vec3(0.0, 0.0, occlusionDepth * 2.0 - 1.0)).z;
 	float occlusionDistance = distance(shadowViewPos.z, occluderShadowViewPosZ);
 	float penumbraRadius = tan(SHADOW_SUN_ANGULAR_RADIUS) * occlusionDistance;
 #else
@@ -165,7 +155,8 @@ vec3 softShadow(in vec3 viewPos, in vec3 normal, in vec3 lightDir) {
 			color += step(shadowCoord.z, texture2D(shadowtex0, shadowCoord.xy).x);
 		#endif
 	}
-	return color / float(SOFT_SHADOW_SAMPLES);
+	return mix(vec3(1.0), 
+	color / float(SOFT_SHADOW_SAMPLES), opacity);;
 }
 
 #endif // SHADOW_GLSL

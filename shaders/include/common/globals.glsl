@@ -1,7 +1,7 @@
 // Interpreted by OptiFine
 
 // 120.0 is the sweet spot
-const float shadowDistance = 120.0;
+const float shadowDistance = 180.0;
 
 // Required to work with shadowDistance
 const float shadowDistanceRenderMul = 1.0;
@@ -14,11 +14,9 @@ const float	sunPathRotation = -45.0;
 
 // Definitions for Advanced Customization
 
-// https://en.wikipedia.org/wiki/Sunlight#Intensity_in_the_Solar_System
-// https://en.wikipedia.org/wiki/Moonlight#Illumination
-#define SUN_ILLUMINANCE      128000.0
-#define MOON_ILLUMINANCE     0.32
-#define TORCH_ILLUMINANCE    8.0
+#define SUN_ILLUMINANCE      100.0
+#define MOON_ILLUMINANCE     0.01
+#define TORCH_ILLUMINANCE    1.0
 #define EMISSION_ILLUMINANCE 1.0
 
 #define WATER_ALBEDO_OPACITY vec4(0.6, 0.8, 1.0, 0.25)

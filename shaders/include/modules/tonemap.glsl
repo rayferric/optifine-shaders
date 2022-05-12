@@ -58,29 +58,61 @@ vec3 tonemapApproxAces(in vec3 hdr) {
 }
 
 /**
+ * Transforms HDR value to LDR using modified Reinhard
+ * operator that mimics ACES curve with infinite white point.
+ *
+ * @param hdr   HDR value
+ * @param ratio positive precision distribution ratio - higher values give more precision to larger HDR values
+ *
+ * @return LDR value
+ */
+float tonemapCustomReinhard(in float hdr, in float ratio) {
+	return hdr / (hdr + ratio);
+}
+
+/**
+ * Transforms LDR value to HDR using inverse of modified Reinhard
+ * operator that mimics ACES curve with infinite white point.
+ *
+ * @param hdr   LDR value
+ * @param ratio ratio value used during Reinhard tonemapping
+ *
+ * @return HDR value
+ */
+float tonemapCustomReinhardInverse(in float ldr, in float ratio) {
+	return (ratio * ldr) / (1.0 - ldr);
+}
+
+/**
  * Transforms HDR color to LDR using modified Reinhard
  * operator that mimics ACES curve with infinite white point.
- * This function enhances TAA moving average results.
  *
  * @param hdr HDR color
  *
  * @return LDR color
  */
-vec3 tonemapModifiedReinhard(in vec3 hdr) {
-	return hdr / (hdr + 0.25);
+vec3 tonemapAcesReinhard(in vec3 hdr) {
+	return vec3(
+		tonemapCustomReinhard(hdr.x, 0.25),
+		tonemapCustomReinhard(hdr.y, 0.25),
+		tonemapCustomReinhard(hdr.z, 0.25)
+	);
 }
 
 /**
  * Transforms LDR color to HDR using inverse of modified Reinhard
  * operator that mimics ACES curve with infinite white point.
- * This function enhances TAA moving average results.
  *
  * @param hdr LDR color
  *
  * @return HDR color
  */
-vec3 tonemapModifiedReinhardInverse(in vec3 ldr) {
-	return (0.25 * ldr) / (1.0 - ldr);
+vec3 tonemapAcesReinhardInverse(in vec3 ldr) {
+	return vec3(
+		tonemapCustomReinhardInverse(ldr.x, 0.25),
+		tonemapCustomReinhardInverse(ldr.y, 0.25),
+		tonemapCustomReinhardInverse(ldr.z, 0.25)
+	);
 }
 
 #endif // TONEMAP_GLSL

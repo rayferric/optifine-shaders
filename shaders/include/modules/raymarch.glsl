@@ -1,74 +1,9 @@
 #ifndef RAYMARCH_GLSL
 #define RAYMARCH_GLSL
 
-// Call this once origin is behind the depth buffer
-// void binaryRefine(inout vec3 origin, inout float depth, in sampler2D depthTex, in vec3 dir) {
-// 	bool inFront = false;
-
-// 	vec3  lastBehind      = origin;
-// 	float lastBehindDepth = depth;
-
-// 	for (int i = 0; i < RAYMARCH_REFINE_STEPS; i++) {
-// 		// Go back, and then trace forward
-// 		// once we got in front of the buffer
-// 		dir *= 0.5;
-// 		origin += inFront ? dir : -dir;
-
-// 		vec3 coord = projPos(gbufferProjection, origin) * 0.5 + 0.5;
-// 		float depth = texture2D(depthTex, coord.xy).x;
-
-// 		inFront = depth > coord.z;
-
-// 		// Mark more precise position, which
-// 		// is still behind the depth buffer
-// 		lastBehind      = inFront ? lastBehind      : origin;
-// 		lastBehindDepth = inFront ? lastBehindDepth : depth;
-// 	}
-
-// 	origin = lastBehind;
-// 	depth  = lastBehindDepth;
-// }
-
-// bool insideBox(in vec3 pos, in vec3 bottomLeft, in vec3 topRight) {
-//     vec3 s = step(bottomLeft, pos) - step(topRight, pos);
-//     return bool(s.x * s.y * s.z);
-// }
-
-// bool rayMarch(
-// 		in sampler2D depthTex,
-// 		in vec3      origin,
-// 		in vec3      dir,
-// 		in float     stepLen,
-// 		in float     stepMul,
-// 		in int       stepCount,
-// 		in float     tolerance) {
-// 	dir *= stepLen;
-
-// 	for (int i = 0; i < stepCount; i++) {
-// 		origin += dir;
-// 		dir *= stepMul;
-
-// 		vec3 coord = projPos(gbufferProjection, origin) * 0.5 + 0.5;
-// 		if (!insideBox(coord, vec3(0.0), vec3(1.0)))
-// 			break;
-
-// 		float depth = texture2D(depthTex, coord.xy).x;
-
-// 		// Once we're behind the depth buffer
-// 		if (coord.z > depth) {
-// 			// Refinement updates origin and depth
-// 			binaryRefine(origin, depth, depthTex, dir);
-
-// 			// Break if refinement didn't move the origin close enough
-// 			if (distance(-origin.z, getLinearDepth(depth)) > tolerance)
-// 				break;
-
-// 			return true;
-// 		}
-// 	}
-
-// 	return false;
-// }
+#include "/include/modules/is_inside_rect.glsl"
+#include "/include/modules/linearize_depth.glsl"
+#include "/include/modules/temporal_jitter.glsl"
 
 #define RAYMARCH_REFINE_STEPS 4
 
@@ -77,11 +12,20 @@ struct RayMarchResult {
 	vec2 coord;
 };
 
-bool insideBox(in vec2 pos, in vec2 bottomLeft, in vec2 topRight) {
-    vec2 s = step(bottomLeft, pos) - step(topRight, pos);
-    return bool(s.x * s.y);
-}
-
+/**
+ * Traces a ray in screen space.
+ *
+ * @param depthTex      depth buffer to sample
+ * @param origin        ray origin
+ * @param dir           tracing direction
+ * @param rayLength     maximum length of traced ray
+ * @param bias          offset of ray origin in tracing direction to avoid self-intersection at grazing angles
+ * @param stepCount     maximum number of steps for the initial scan
+ * @param nearThickness maximum Z difference to score a hit for intersections near the camera
+ * @param farThickness  maximum Z difference to score a hit for intersections further from the camera
+ *
+ * @return    .hasHit - whether the ray scored a hit | .coord - screen space position of the intersection point
+ */
 RayMarchResult rayMarch(
 		in sampler2D depthTex,
 		in vec3      origin,
@@ -89,7 +33,10 @@ RayMarchResult rayMarch(
 		in float     rayLength,
 		in float     bias,
 		in int       stepCount,
-		in float     thickness) {
+		in float     nearThickness,
+		in float     farThickness) {
+	vec2 temporalOffset = getTemporalOffset();
+
 	vec3 start = origin + dir * 0.02;
 	vec3 end   = origin + dir * rayLength;
 
@@ -120,7 +67,7 @@ RayMarchResult rayMarch(
 		float homoZ  = mix(homoStart.z, homoEnd.z, progress);
 		vec2  screen = mix(screenStart, screenEnd, progress);
 
-		if (!insideBox(screen, vec2(0.0), vec2(1.0)))
+		if (!isInsideRect(screen, vec2(0.0), vec2(1.0)))
 			break;
 
 		float rayDepth = -(homoZ / invW);
@@ -128,7 +75,7 @@ RayMarchResult rayMarch(
 		if (rayDepth < near || rayDepth > far)
 			break;
 
-		float sampleDepth = getLinearDepth(texture2D(depthTex, screen + 0.05).x);
+		float sampleDepth = linearizeDepth(texture2D(depthTex, screen + temporalOffset).x);
 
 		// When we reach behind the depth buffer...
 		// (This block is terminal)
@@ -151,7 +98,7 @@ RayMarchResult rayMarch(
 				screen = mix(screenStart, screenEnd, progress);
 
 				rayDepth    = -(homoZ / invW);
-				sampleDepth = getLinearDepth(texture2D(depthTex, screen + 0.05).x);
+				sampleDepth = linearizeDepth(texture2D(depthTex, screen + temporalOffset).x);
 
 				inFront = sampleDepth > rayDepth;
 
@@ -161,7 +108,7 @@ RayMarchResult rayMarch(
 				finalCoord = inFront ? finalCoord : screen;
 			}
 
-			if (depthDiff > thickness)
+			if (depthDiff > mix(nearThickness, farThickness, pow(progress, 10.0)))
 				break;
 
 			return RayMarchResult(true, finalCoord);
