@@ -40,7 +40,7 @@ void main() {
 		else
 			newBrightness = brightness;
 
-		newBrightness = clamp(newBrightness, 0.1, 10.0);
+		newBrightness = clamp(newBrightness, 0.05, 10.0);
 
 		// colortex0: Temporal History
 		gl_FragData[0].xyz = decodeVec3(tonemapCustomReinhard(newBrightness, 4.0));

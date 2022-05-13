@@ -28,4 +28,4 @@ const int shadowMapResolution =    2048; // [1024 2048 4096]
 #define WAVING_MULTI_PLANTS
 
 // Debug
-#define SHOW_DEBUG_OUTPUT
+#define SHOW_DEBUG_OUTPUT 0 // [0 1]

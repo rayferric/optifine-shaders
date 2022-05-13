@@ -3,7 +3,7 @@
 Interpreted by OptiFine
 
 const int colortex0Format = RGB8;    // Temporal History
-const int colortex1Format = RGB16F;  // HDR Buffer
+const int colortex1Format = RGB32F;  // HDR Buffer
 const int colortex2Format = RG16;    // Packed Normal
 const int colortex3Format = RGB16;   // Packed sRGB Albedo RG; Packed (sRGB Albedo B + Opacity); Packed (Roughness + Metallic)
 const int colortex4Format = RGB8;    // Gamma-Space Sky Light; Gamma-Space Torch Light; Material ID

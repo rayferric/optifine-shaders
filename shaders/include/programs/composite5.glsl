@@ -21,14 +21,13 @@ void main() {
 #ifdef FSH
 
 #include "/include/modules/bloom.glsl"
-#include "/include/modules/gamma.glsl"
 
 /* DRAWBUFFERS:1 */
 
-// Reading temporal history and mipmapping for bloom
+// Vertical bloom atlas blur
 
 void main() {
-	gl_FragData[0].xyz = gammaToLinear(writeBloomAtlas(colortex0, v_TexCoord));
+	gl_FragData[0].xyz = blurBloomAtlas(colortex1, v_TexCoord, true);
 	gl_FragData[0].w   = 1.0;
 }
 

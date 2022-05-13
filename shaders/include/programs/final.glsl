@@ -20,21 +20,29 @@ void main() {
 
 #ifdef FSH
 
+#include "/include/modules/bloom.glsl"
+#include "/include/modules/dither.glsl"
 #include "/include/modules/gamma.glsl"
 #include "/include/modules/luminance.glsl"
 #include "/include/modules/tonemap.glsl"
 
-void main() {
-	vec3 color = texture2D(colortex1, v_TexCoord).xyz;
+// Reading temporal history, mixing-in bloom and final post processing
 
+void main() {
+	vec3 color = texture2D(colortex0, v_TexCoord).xyz; // colortex0 is RGB8 (Teporal History)
+	color = gammaToLinear(color);
+
+	color += readBloomAtlas(colortex1, v_TexCoord); // colortex1 is RGB16F (Reused HDR Buffer)
 	color = pow(color, vec3(GAMMA));
 	color = clamp(mix(vec3(luminance(color)), color, SATURATION), 0.0, 1.0);
 	color = clamp(mix(vec3(0.5), color, CONTRAST), 0.0, 1.0);
+	color = linearToGamma(color);
+	color = dither8x8(color, gl_FragCoord.xy, 255.0);
 	
-	gl_FragData[0].xyz = linearToGamma(color);
+	gl_FragData[0].xyz = color;
 	gl_FragData[0].w   = 1.0;
 
-#ifdef SHOW_DEBUG_OUTPUT
+#if SHOW_DEBUG_OUTPUT
 	gl_FragData[0] = texture2D(colortex7, v_TexCoord);
 #endif
 }
