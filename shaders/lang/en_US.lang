@@ -11,6 +11,10 @@ option.SATURATION=Saturation
 option.SATURATION.comment=Color saturation. Higher values give more colorful image. No performance impact.
 option.CONTRAST=Contrast
 option.CONTRAST.comment=Color harshness. Higher values give more readable image. No performance impact.
+option.BLOOM_INTENSITY=Bloom Intensity
+option.BLOOM_INTENSITY.comment=Bloom brightness. Higher vales give brighter highlights. No performance impact unless OFF.
+option.EYE_ADAPTATION=Eye Adaptation
+option.EYE_ADAPTATION.comment=Automatic exposure adjustment speed. No performance impact.
 
 option.shadowMapResolution=Shadow Quality
 option.shadowMapResolution.comment=Resolution of the shadow depth buffer. Higher values give more detailed shadows. High performance impact.
@@ -26,10 +30,10 @@ option.SUN_TEMPERATURE=Sunlight Temperature
 option.SUN_TEMPERATURE.comment=Color temperature of sunlight in Kelvin. Higher values give brighter, more blue-ish color. No performance impact.
 option.MOON_TEMPERATURE=Moonlight Temperature
 option.MOON_TEMPERATURE.comment=Color temperature of moonlight in Kelvin. Higher values give brighter, more blue-ish color. No performance impact.
-option.TORCH_TEMPERATURE=Torchlight Temperature
-option.TORCH_TEMPERATURE.comment=Color temperature of light emitted by torches in Kelvin. Higher values give brighter, more blue-ish color. No performance impact.
-option.TORCH_FALLOFF=Torchlight Falloff
-option.TORCH_FALLOFF.comment=Falloff exponent of light emitted by torches. Higher values give smaller light radius. No performance impact.
+option.BLOCK_TEMPERATURE=Blocklight Temperature
+option.BLOCK_TEMPERATURE.comment=Color temperature of light emitted by blocks in Kelvin. Higher values give brighter, more blue-ish color. No performance impact.
+option.BLOCK_FALLOFF=Blocklight Falloff
+option.BLOCK_FALLOFF.comment=Falloff exponent of light emitted by blocks. Higher values give smaller light radius. No performance impact.
 option.SKY_FALLOFF=Sky Energy Falloff
 option.SKY_FALLOFF.comment=Falloff exponent of sky contribution. Higher values make sky energy less influential in interior areas. No performance impact.
 option.SSAO_SAMPLES=SSAO Quality
@@ -54,6 +58,14 @@ option.WAVING_MULTI_PLANTS.comment=Multi-block plant wave displacement. Low perf
 
 option.SHOW_DEBUG_OUTPUT=Show Debug Output
 option.SHOW_DEBUG_OUTPUT.comment=Override shader stages to show debug buffer contents.
+
+value.BLOOM_INTENSITY.-2=OFF
+value.BLOOM_INTENSITY.-1=Low
+value.BLOOM_INTENSITY.0=Medium
+value.BLOOM_INTENSITY.1=High
+
+value.EYE_ADAPTATION.0.01=Slow
+value.EYE_ADAPTATION.0.05=Fast
 
 value.shadowMapResolution.1024=Low
 value.shadowMapResolution.2048=Medium

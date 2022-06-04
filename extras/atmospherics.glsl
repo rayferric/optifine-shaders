@@ -29,7 +29,7 @@ vec2 raySphereIntersect(in vec3 origin, in vec3 dir, in float radius) {
 	float b = 2.0 * dot(dir, origin);
 	float c = dot(origin, origin) - (radius * radius);
 	float d = (b * b) - 4.0 * a * c;
-	if(d < 0.0)return vec2(1.0, -1.0);
+	if (d < 0.0)return vec2(1.0, -1.0);
 	return vec2(
 		(-b - sqrt(d)) / (2.0 * a),
 		(-b + sqrt(d)) / (2.0 * a)
@@ -127,7 +127,7 @@ vec3 atmosphere(
 ) {
 	// Intersect the atmosphere
 	vec2 intersect = raySphereIntersect(pos, dir, atmosphereRadius);
-	if(intersect.x > intersect.y)return color;
+	if (intersect.x > intersect.y)return color;
 	
 	float rayPos = max(intersect.x, 0.0);
 	float step = (min(intersect.y, depth) - rayPos) / float(samples); // min(intersect.y, depth) ensures that the tracing ends on collision
@@ -137,7 +137,7 @@ vec3 atmosphere(
 	vec3 sumR = vec3(0.0);
 	vec3 sumM = vec3(0.0);
 	
-	for(int i = 0; i < samples; i++) {
+	for (int i = 0; i < samples; i++) {
 		vec3 samplePos = pos + dir * (rayPos + step * 0.5); // Current sampling position
 
 		// Similar to the primary iteration
@@ -148,7 +148,7 @@ vec3 atmosphere(
 
 		vec3 lightOpticalRMO = vec3(0.0);
 
-		for(int j = 0; j < secSamples; j++) {
+		for (int j = 0; j < secSamples; j++) {
 			vec3 lightSamplePos = samplePos + sunDir * (secRayPos + lightStep * 0.5);
 
 			vec3 lightDensities = densitiesRMO(lightSamplePos, planetRadius, rayHeight, mieHeight, ozoneLevel, ozoneFalloff) * lightStep;

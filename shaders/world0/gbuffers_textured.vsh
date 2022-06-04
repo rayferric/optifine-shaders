@@ -3,7 +3,7 @@
 #define VSH
 #define OVERWORLD
 
-#include "/include/common/common_geometry.glsl"
-#include "/include/common/vertex_attributes.glsl"
+#include "/src/common/common_geometry.glsl"
+#include "/src/common/vertex_attributes.glsl"
 
-#include "/include/programs/gbuffers_textured.glsl"
+#include "/src/programs/gbuffers_textured.glsl"

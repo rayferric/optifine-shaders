@@ -125,7 +125,7 @@ vec3 atmosphere(
 	float stepSize = min(intersect.y - rayPos, maxLen) / float(SKY_SAMPLES);
 	rayPos += stepSize * 0.5; // Let's sample in the center
 	
-	for(int i = 0; i < SKY_SAMPLES; i++) {
+	for (int i = 0; i < SKY_SAMPLES; i++) {
 		vec3 samplePos = pos + dir * rayPos; // Current sampling position
 
 		// Similar to the primary iteration
@@ -137,7 +137,7 @@ vec3 atmosphere(
 		float lightStep = lightIntersect.y / float(SKY_LIGHT_SAMPLES);
 		float lightRayPos = lightStep * 0.5; // Let's sample in the center
 
-		for(int j = 0; j < SKY_LIGHT_SAMPLES; j++) {
+		for (int j = 0; j < SKY_LIGHT_SAMPLES; j++) {
 			vec3 lightSamplePos = samplePos + lightDir * (lightRayPos);
 
 			lightOpticalDepth += avgDensities(lightSamplePos) * lightStep;
@@ -203,7 +203,7 @@ float getShadowIlluminance() {
 	return mix(MOON_ILLUMINANCE, SUN_ILLUMINANCE, getDayFactor(getSunHeight() - 0.2));
 }
 
-float getShadowSwitchFactor() { // Hide shadows while switching
+float getShadowSwitchFactor() { // Hide shadows while switching light sources
 	float sunHeight = getSunHeight();
 	return 1.0 - (smoothstep(-0.05, 0.0, sunHeight) - smoothstep(0.0, 0.05, sunHeight));
 }

@@ -36,7 +36,7 @@ vec3 blurBloom(in sampler2D tex, in vec2 coord, in ivec2 dir) {
 	float maxLength = length(vec2(BLOOM_QUALITY));
 	
 	vec4 color = vec4(0.0);
-	for(int i = -BLOOM_QUALITY; i <= BLOOM_QUALITY; i++) {
+	for (int i = -BLOOM_QUALITY; i <= BLOOM_QUALITY; i++) {
 		vec2 offset = vec2(i * dir);
 		float weight = 1.0 - smoothstep(0.0, 1.0, smoothstep(0.0, 1.0, smoothstep(0.0, 1.0, sqrt(length(offset) / maxLength))));
 
@@ -60,7 +60,7 @@ vec3 getBloom(in sampler2D tex, in vec2 coord) {
 	float weight = 1.0;
 	
 	vec4 color = vec4(0.0);
-	for(int i = 1; i <= BLOOM_LEVELS; i++) {
+	for (int i = 1; i <= BLOOM_LEVELS; i++) {
 		color.xyz += readBloomTile(tex, coord, i) * weight;
 		color.w   += weight;
 		

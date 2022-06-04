@@ -3,7 +3,7 @@
 #define VSH
 #define OVERWORLD
 
-#include "/include/common/common_deferred.glsl"
-#include "/include/common/vertex_attributes.glsl"
+#include "/src/common/common_deferred.glsl"
+#include "/src/common/vertex_attributes.glsl"
 
-#include "/include/programs/final.glsl"
+#include "/src/programs/final.glsl"

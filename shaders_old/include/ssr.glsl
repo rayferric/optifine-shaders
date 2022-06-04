@@ -24,7 +24,7 @@
 vec2 binarySearch(in sampler2D depthTex, in vec3 origin, in vec3 dir) {
 	bool exceeded = true;
 	vec2 coord;
-	for(int i = 0; i < SSR_BIN_STEPS; i++) {
+	for (int i = 0; i < SSR_BIN_STEPS; i++) {
 		dir *= 0.5;
 		if(exceeded)origin -= dir;
 		else origin += dir;
@@ -52,7 +52,7 @@ vec2 binarySearch(in sampler2D depthTex, in vec3 origin, in vec3 dir) {
 vec3 rayMarch(in sampler2D depthTex, in vec3 origin, in vec3 dir) {
 	vec3 coord;
 	dir *= SSR_INIT_STEP / SSR_STEP_MUL;
-	for(int i = 0; i < SSR_MAX_STEPS; i++) {
+	for (int i = 0; i < SSR_MAX_STEPS; i++) {
 		origin += (dir *= SSR_STEP_MUL);
 
 		vec4 proj  = gbufferProjection * vec4(origin, 1.0);

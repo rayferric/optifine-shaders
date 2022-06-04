@@ -28,7 +28,7 @@ vec3 fxaa(in sampler2D tex, in vec2 coord, in vec2 texelSize) {
 
 	// If the luma variation is lower that a threshold (or if we are in a really dark area), we are not on an edge, don't perform any AA
 	float lumaDelta = lumaMax - lumaMin;
-	if(lumaDelta < max(FXAA_THRESHOLD_MIN, lumaMax * FXAA_THRESHOLD_MAX))return color;
+	if (lumaDelta < max(FXAA_THRESHOLD_MIN, lumaMax * FXAA_THRESHOLD_MAX))return color;
 
 	/* Estimating gradient and choosing edge direction */
 
@@ -76,7 +76,7 @@ vec3 fxaa(in sampler2D tex, in vec2 coord, in vec2 texelSize) {
 
 	// Average luma in the correct direction
 	float lumaLocalAvg;
-	if(is1Steepest) {
+	if (is1Steepest) {
 		stepSize = -stepSize;
 		lumaLocalAvg = 0.5 * (luma1 + c);
 	} else {
@@ -85,7 +85,7 @@ vec3 fxaa(in sampler2D tex, in vec2 coord, in vec2 texelSize) {
 
 	// Shift coord in the correct direction by half a pixel
 	vec2 edgeCoord = coord;
-	if(isHorizontal) {
+	if (isHorizontal) {
 		edgeCoord.y += stepSize * 0.5;
 	} else {
 		edgeCoord.x += stepSize * 0.5;
@@ -110,17 +110,17 @@ vec3 fxaa(in sampler2D tex, in vec2 coord, in vec2 texelSize) {
 	bool reachedBoth = reached1 && reached2;
 
 	// If the side is not reached, we continue to explore in this direction
-	if(!reached1)coord1 -= offset;
-	if(!reached2)coord2 += offset;
+	if (!reached1)coord1 -= offset;
+	if (!reached2)coord2 += offset;
 
 	/* Iterating */
 
 	// If both sides have not been reached, continue to explore
-	if(!reachedBoth) {
-		for(int i = 2; i < FXAA_ITERATIONS; i++) {
+	if (!reachedBoth) {
+		for (int i = 2; i < FXAA_ITERATIONS; i++) {
 			// If needed, read luma in both directions, compute delta
-			if(!reached1)end1 = luma(texture2D(tex, coord1).xyz) - lumaLocalAvg;
-			if(!reached2)end2 = luma(texture2D(tex, coord2).xyz) - lumaLocalAvg;
+			if (!reached1)end1 = luma(texture2D(tex, coord1).xyz) - lumaLocalAvg;
+			if (!reached2)end2 = luma(texture2D(tex, coord2).xyz) - lumaLocalAvg;
 
 			// If the luma deltas at the current extremities is larger than the local gradient, we have reached the side of the edge
 			reached1 = abs(end1) >= gradientScaled;
@@ -128,11 +128,11 @@ vec3 fxaa(in sampler2D tex, in vec2 coord, in vec2 texelSize) {
 			reachedBoth = reached1 && reached2;
 
 			// If the side is not reached, we continue to explore in this direction, with a variable quality
-			if(!reached1)coord1 -= offset * FXAA_QUALITY[i];
-			if(!reached2)coord2 += offset * FXAA_QUALITY[i];
+			if (!reached1)coord1 -= offset * FXAA_QUALITY[i];
+			if (!reached2)coord2 += offset * FXAA_QUALITY[i];
 
 			// If both sides have been reached, stop the exploration
-			if(reachedBoth)break;
+			if (reachedBoth)break;
 		}
 	}
 
@@ -181,7 +181,7 @@ vec3 fxaa(in sampler2D tex, in vec2 coord, in vec2 texelSize) {
 
 	// Compute the final UV coordinates.
 	vec2 finalCoord = coord;
-	if(isHorizontal) {
+	if (isHorizontal) {
 		finalCoord.y += finalOffset * stepSize;
 	} else {
 		finalCoord.x += finalOffset * stepSize;

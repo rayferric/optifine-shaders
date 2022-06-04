@@ -3,6 +3,6 @@
 #define FSH
 #define OVERWORLD
 
-#include "/include/common/common_geometry.glsl"
+#include "/src/common/common_geometry.glsl"
 
-#include "/include/programs/shadow.glsl"
+#include "/src/programs/shadow.glsl"

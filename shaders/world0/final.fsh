@@ -3,6 +3,6 @@
 #define FSH
 #define OVERWORLD
 
-#include "/include/common/common_deferred.glsl"
+#include "/src/common/common_deferred.glsl"
 
-#include "/include/programs/final.glsl"
+#include "/src/programs/final.glsl"
