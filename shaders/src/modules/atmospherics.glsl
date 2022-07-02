@@ -28,7 +28,7 @@
 // Clouds
 #define ATMOSPHERICS_CLOUD_PLANE_LEVEL 1e3
 #define ATMOSPHERICS_CLOUD_PLANE_HEIGHT 1e3
-#define ATMOSPHERICS_CLOUD_SAMPLES 4
+#define ATMOSPHERICS_CLOUD_SAMPLES 16
 #define ATMOSPHERICS_CLOUD_COVERAGE 0.5
 
 const float atmosphereRadius = ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_ATMOSPHERE_HEIGHT;
@@ -110,115 +110,6 @@ vec3 avgDensities(in vec3 pos) {
 	return density;
 }
 
-/**
- * Calculates atmospheric scattering value for a ray intersecting the planet.
- * This function is used to calculate the sky color or trace volumetric fog.
- *
- * @param pos      ray origin
- * @param dir      ray direction
- * @param lightDir light vector
- *
- * @return sky color
- */
-vec3 atmosphere(
-		in vec3 worldPos,
-		in vec3 lightDir,
-		in bool isSky) {
-	vec3 eyePos = vec3(0.0, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_VIEW_HEIGHT, 0.0);
-	vec3 traceDir = normalize(worldPos);
-	lightDir = mat3(gbufferModelViewInverse) * lightDir;
-
-	// if (!traceFog) {
-	// 	traceDir.y = max(traceDir.y, 0.0);
-	// 	traceDir = normalize(traceDir);
-	// }
-
-	// Intersect the atmosphere
-	vec2 atmosphereIntersection = raySphereIntersect(eyePos, traceDir, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_ATMOSPHERE_HEIGHT);
-	vec2 cloudStartIntersection = raySphereIntersect(eyePos, traceDir, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_CLOUD_PLANE_LEVEL);
-    vec2 cloudEndIntersection   = raySphereIntersect(eyePos, traceDir, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_CLOUD_PLANE_LEVEL + ATMOSPHERICS_CLOUD_PLANE_HEIGHT);
-
-	// Accumulators
-	vec3 opticalDepth = vec3(0.0); // Accumulated density of particles participating in Rayleigh, Mie and ozone scattering respectively
-	vec3 sumR = vec3(0.0);
-	vec3 sumM = vec3(0.0);
-	bool traceFog = true;
-	// We clamp the sampling length to keep precision at the horizon
-	// This introduces banding, but we can compensate for that by scaling the clamp according to horizon angle
-	float rayPos = max(atmosphereIntersection.x, 0.0); // Ray always begins inside the atmosphere, so it could be just 0
-	float traceDistance = isSky ? atmosphereIntersection.y : min(atmosphereIntersection.y, length(worldPos));
-
-	float maxLen = ATMOSPHERICS_ATMOSPHERE_HEIGHT;
-	maxLen *= (1.0 - abs(traceDir.y) * 0.5);
-
-	int samples = traceFog ? ATMOSPHERICS_FOG_SAMPLES : ATMOSPHERICS_SKY_SAMPLES;
-	float stepSize = min(traceDistance - rayPos, maxLen) / float(samples);
-	float offset = traceFog ? hash(worldPos * frameTimeCounter) : 0.5;
-	rayPos += stepSize * offset;
-	
-	for (int i = 0; i < samples; i++) {
-		vec3 samplePos = traceDir * rayPos; // Current sampling position
-		rayPos += stepSize;
-
-		// If the ray will go past the cloud plane in the next iteration, we need to trace clouds now
-		if (rayPos > cloudStartIntersection.y) {
-			float cloudRayPos = cloudStartIntersection.y;
-			float cloudStepSize = (cloudEndIntersection.y - cloudRayPos) / float(ATMOSPHERICS_CLOUD_SAMPLES);
-    		cloudRayPos += cloudStepSize * hash(worldPos * frameTimeCounter);
-
-			float cloudOpticalDepth = 0.0;
-			for (int j = 0; j < ATMOSPHERICS_CLOUD_SAMPLES; j++) {
-				vec3 cloudSamplePos = traceDir * cloudRayPos; // Current sampling position
-				cloudRayPos += cloudStepSize;
-
-				cloudOpticalDepth += cloudDensity(eyePos + cloudSamplePos);
-			}
-			cloudOpticalDepth *= cloudStepSize;
-		}
-
-		// if (traceFog && isInShadow(samplePos))
-		// 	continue;
-
-		// Similar to the primary iteration
-		vec2 lightAtmosphereIntersect = raySphereIntersect(eyePos + samplePos, lightDir, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_ATMOSPHERE_HEIGHT);
-		// No need to check if intersection happened as we already are inside the sphere
-
-		vec3 lightOpticalDepth = vec3(0.0);
-
-		// We're inside the sphere now, hence we don't have to clamp ray pos
-		float lightStepSize = lightAtmosphereIntersect.y / float(ATMOSPHERICS_LIGHT_SAMPLES);
-		float lightRayPos = lightStepSize * 0.5; // Let's always sample in the center for temporal stability
-
-		for (int j = 0; j < ATMOSPHERICS_LIGHT_SAMPLES; j++) {
-			vec3 lightSamplePos = samplePos + lightDir * lightRayPos;
-			lightRayPos += lightStepSize;
-
-			lightOpticalDepth += avgDensities(eyePos + lightSamplePos);
-		}
-		lightOpticalDepth *= lightStepSize; // Multiply by distance for Beer's law
-
-		// Accumulate optical depth
-		vec3 densities = avgDensities(eyePos + samplePos) * stepSize;
-		opticalDepth += densities;
-
-		// Accumulate scattered light calculated using Beer's law
-		vec3 scattered = exp(-(
-				ATMOSPHERICS_BETA_RAY * (opticalDepth.x + lightOpticalDepth.x) +
-				ATMOSPHERICS_BETA_MIE * (opticalDepth.y + lightOpticalDepth.y) +
-				ATMOSPHERICS_BETA_OZONE * (opticalDepth.z + lightOpticalDepth.z)));
-		sumR += scattered * densities.x;
-		sumM += scattered * densities.y;
-	}
-
-	float cosTheta = dot(traceDir, lightDir);
-	
-	return max(
-		phaseR(cosTheta)                 * ATMOSPHERICS_BETA_RAY * sumR + // Rayleigh color
-	   	phaseM(cosTheta, ATMOSPHERICS_G) * ATMOSPHERICS_BETA_MIE * sumM,  // Mie color
-		0.0
-	);
-}
-
 float noise3D(in vec3 value) {
 	vec3 f = floor(value);
 	vec3 c = ceil(value);
@@ -272,11 +163,139 @@ float cloudDensity(in vec3 pos) {
     vec2 windOffset = vec2(frameTimeCounter) * 30.0;
 
 	float density = cloudCoverage(pos.xz, windOffset);
-	// density *= cloudHeightFalloff(pos.y);
-	// density *= max(noise3D(pos * 0.01 + vec3(windOffset.x * 0.01, 0.0, windOffset.y * 0.01)), 0.2);
+	density *= cloudHeightFalloff(pos.y);
+	density *= max(noise3D(pos * 0.01 + vec3(windOffset.x * 0.01, 0.0, windOffset.y * 0.01)), 0.2);
 
     return density;
 }
+
+/**
+ * Calculates atmospheric scattering value for a ray intersecting the planet.
+ * This function is used to calculate the sky color or trace volumetric fog.
+ *
+ * @param pos      ray origin
+ * @param dir      ray direction
+ * @param lightDir light vector
+ *
+ * @return sky color
+ */
+vec3 atmosphere(
+		in vec3 worldPos,
+		in vec3 lightDir,
+		in bool isSky) {
+	vec3 eyePos = vec3(0.0, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_VIEW_HEIGHT, 0.0);
+	vec3 traceDir = normalize(worldPos);
+	lightDir = mat3(gbufferModelViewInverse) * lightDir;
+
+	// if (!traceFog) {
+	// 	traceDir.y = max(traceDir.y, 0.0);
+	// 	traceDir = normalize(traceDir);
+	// }
+
+	// Intersect the atmosphere
+	vec2 atmosphereIntersection = raySphereIntersect(eyePos, traceDir, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_ATMOSPHERE_HEIGHT);
+	vec2 cloudStartIntersection = raySphereIntersect(eyePos, traceDir, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_CLOUD_PLANE_LEVEL);
+    vec2 cloudEndIntersection   = raySphereIntersect(eyePos, traceDir, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_CLOUD_PLANE_LEVEL + ATMOSPHERICS_CLOUD_PLANE_HEIGHT);
+
+	float rayPos = max(atmosphereIntersection.x, 0.0); // Ray always begins inside the atmosphere, so it could be just 0
+	float traceDistance = isSky ? atmosphereIntersection.y : min(atmosphereIntersection.y, length(worldPos));
+
+	// We clamp the sampling length to keep precision at the horizon
+	// This introduces banding, but we can compensate for that by scaling the clamp according to horizon angle
+	float maxLen = ATMOSPHERICS_ATMOSPHERE_HEIGHT;
+	maxLen *= (1.0 - abs(traceDir.y) * 0.5);
+
+	float atmosphereStepSize = min(traceDistance - rayPos, maxLen) / float(ATMOSPHERICS_SKY_SAMPLES);
+	float stepSize = atmosphereStepSize;
+	rayPos += stepSize * hash(worldPos * frameTimeCounter);
+
+	// Accumulators
+	vec3 opticalDepth = vec3(0.0);
+	vec3 sumR = vec3(0.0);
+	vec3 sumM = vec3(0.0);
+
+	bool tracingClouds = false;
+	bool doneWithClouds = traceDir.y < 0.05;
+	int cloudIteration = 0;
+	float savedRayPos;
+	
+	for (int i = 0; i < ATMOSPHERICS_SKY_SAMPLES + ATMOSPHERICS_CLOUD_SAMPLES; i++) {
+		// If the ray will go past the cloud plane start in this iteration, we need to start tracing clouds now
+		if (rayPos > cloudStartIntersection.y && !doneWithClouds && !tracingClouds) {
+			tracingClouds = true;
+			savedRayPos = rayPos;
+
+			rayPos = cloudStartIntersection.y;
+			stepSize = (cloudEndIntersection.y - rayPos) / float(ATMOSPHERICS_CLOUD_SAMPLES);
+			rayPos += stepSize * hash(worldPos * frameTimeCounter);
+		}
+
+		if (tracingClouds) {
+			cloudIteration++;
+			if (cloudIteration > ATMOSPHERICS_CLOUD_SAMPLES) {
+				doneWithClouds = true;
+				tracingClouds = false;
+				rayPos = savedRayPos;
+				stepSize = atmosphereStepSize;
+			}
+		}
+
+		vec3 samplePos = traceDir * rayPos; // Current sampling position
+		rayPos += stepSize;
+
+		// if (isInShadow(samplePos))
+		// 	continue;
+
+		// Similar to the primary iteration
+		vec2 lightAtmosphereIntersect = raySphereIntersect(eyePos + samplePos, lightDir, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_ATMOSPHERE_HEIGHT);
+		// No need to check if intersection happened as we already are inside the sphere
+
+		vec3 lightOpticalDepth = vec3(0.0);
+
+		// We're inside the sphere now, hence we don't have to clamp ray pos
+		float lightTraceLength = tracingClouds ? 20.0 : lightAtmosphereIntersect.y;
+		float lightStepSize = lightTraceLength / float(ATMOSPHERICS_LIGHT_SAMPLES);
+		float lightRayPos = lightStepSize * hash(worldPos * frameTimeCounter); // Let's always sample in the center for temporal stability
+
+		for (int j = 0; j < ATMOSPHERICS_LIGHT_SAMPLES; j++) {
+			vec3 lightSamplePos = samplePos + lightDir * lightRayPos;
+			lightRayPos += lightStepSize;
+
+			lightOpticalDepth += avgDensities(eyePos + lightSamplePos);
+		}
+		lightOpticalDepth *= lightStepSize; // Multiply by distance for compliance with Beer's law
+
+		// Accumulate optical depth
+		vec3 densities = avgDensities(eyePos + samplePos);
+		densities.y += (tracingClouds ? cloudDensity(eyePos + samplePos) * 10000.0 : 0.0);
+		vec3 opticalDepthDelta = densities * stepSize;
+		opticalDepth += opticalDepthDelta;
+
+		// Accumulate scattered light calculated using Beer's law
+		vec3 scattered = exp(-(
+				ATMOSPHERICS_BETA_RAY * (opticalDepth.x + lightOpticalDepth.x) +
+				ATMOSPHERICS_BETA_MIE * (opticalDepth.y + lightOpticalDepth.y) +
+				ATMOSPHERICS_BETA_OZONE * (opticalDepth.z + lightOpticalDepth.z)));
+		
+		sumR += scattered * opticalDepthDelta.x;
+		sumM += scattered * opticalDepthDelta.y;
+	}
+
+	float cosTheta = dot(traceDir, lightDir);
+
+	// vec3 backgroundOpacity = exp(-(
+	// 		ATMOSPHERICS_BETA_RAY * opticalDepth.x +
+	// 		ATMOSPHERICS_BETA_MIE * opticalDepth.y +
+	// 		ATMOSPHERICS_BETA_OZONE * opticalDepth.z));
+	
+	return max(
+		phaseR(cosTheta)                 * ATMOSPHERICS_BETA_RAY * sumR + // Rayleigh color
+	   	phaseM(cosTheta, ATMOSPHERICS_G) * ATMOSPHERICS_BETA_MIE * sumM,  // Mie color
+		0.0
+	);
+}
+
+
 
 // vec4 traceClouds(
 // 	in vec3 worldPos,
