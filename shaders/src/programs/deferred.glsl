@@ -43,7 +43,7 @@ void main() {
 	vec3 lightDir = normalize(shadowLightPosition);
 
 	if (depth == 1.0) { // Sky
-		gl_FragData[0].xyz = atmosphere(worldPos, lightDir, true) * SUN_ILLUMINANCE * 10.0;
+		gl_FragData[0].xyz = sky(worldPos, lightDir, true) * SUN_ILLUMINANCE * 10.0;
 		// gl_FragData[0].xyz =  vec3(0.0);
 		gl_FragData[0].w   = 1.0;
 
@@ -92,14 +92,14 @@ void main() {
 		skyDiffuseEnergy *= computeSsao(viewPos, normal, depthtex0);
 
 		vec3 totalEnergy = shadowLightEnergy + skyDiffuseEnergy + blockDiffuseEnergy + emissionEnergy + ambientEnergy;
-		totalEnergy = mix(totalEnergy, vec3(SUN_ILLUMINANCE * 10.0), atmosphere(worldPos, lightDir, false));
+		// totalEnergy = mix(totalEnergy, vec3(SUN_ILLUMINANCE * 10.0), atmosphere(worldPos, lightDir, false));
 
 		vec3 worldPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
 		float fogFactor = smoothstep(far - 24.0 - 50.0, far - 24.0, length(worldPos));
-		if (fogFactor > EPSILON) {
-			vec3 skyEnergy = atmosphere(worldPos, lightDir, true) * SUN_ILLUMINANCE * 10.0;
-			totalEnergy = mix(totalEnergy, skyEnergy, fogFactor);
-		}
+		// if (fogFactor > EPSILON) {
+		// 	vec3 skyEnergy = atmosphere(worldPos, lightDir, true) * SUN_ILLUMINANCE * 10.0;
+		// 	totalEnergy = mix(totalEnergy, skyEnergy, fogFactor);
+		// }
 
 		// colortex1: HDR Buffer
 		gl_FragData[0].xyz = totalEnergy;

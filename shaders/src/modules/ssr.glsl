@@ -5,7 +5,7 @@
 #include "/src/modules/raymarch.glsl"
 
 #define SSR_MAX_STEPS 16
-#define SSR_MAX_DISTANCE 200.0
+#define SSR_MAX_DISTANCE 200.0 // Distance in pixels across screen
 #define SSR_BIAS 0.05 // Offset ray origin to avoid self-intersection at grazing angles
 #define SSR_NEAR_TOLERANCE     0.2
 #define SSR_FAR_TOLERANCE     32.0
