@@ -28,7 +28,7 @@ vec3 computeSSReflection(
 		in vec3 viewPos,
 		in vec3 normal,
 		in float roughness,
-		in float skyFactor = 1.0) {
+		in float skyFactor) {
 	vec3 dir = reflect(normalize(viewPos), normal);
 	vec3 jitt = normalize(mix(dir, hashToHemisphereDir(viewPos * frameTimeCounter, normal), roughness));
 

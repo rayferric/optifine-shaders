@@ -21,6 +21,8 @@ void main() {
 #ifdef FSH
 
 #include "/src/modules/encode.glsl"
+#include "/src/modules/halton.glsl"
+#include "/src/modules/hash.glsl"
 #include "/src/modules/luminance.glsl"
 #include "/src/modules/tonemap.glsl"
 
@@ -29,14 +31,22 @@ void main() {
 // Auto exposure and tonemapping
 
 void main() {
-	float brightness = tonemapCustomReinhardInverse(encode8BitVec3(texture2D(colortex0, vec2(0.5 / viewWidth, 0.5 / viewHeight)).xyz), 4.0);
+	float brightness = tonemapCustomReinhardInverse(encode8BitVec3(
+		texture2D(colortex0, vec2(0.5 / viewWidth, 0.5 / viewHeight)).xyz
+	), 4.0);
 
 	if (gl_FragCoord.x < 1.0 && gl_FragCoord.y < 1.0) {
-		float brightnessLod = log2(viewHeight);
-		float newBrightness = luminance(texture2DLod(colortex1, vec2(0.5), brightnessLod).xyz);
+		float maxLod = log2(viewHeight);
+		float newBrightness = 0.0;
+		for (int i = 0; i < 5; i++) {
+			newBrightness += luminance(
+				texture2DLod(colortex1, halton16[(i + frameCounter) % 16], float(i)).xyz
+			);
+		}
+		newBrightness *= 0.2;
 
 		if (newBrightness > EPSILON) // OptiFine mipmapping likes to flicker with pure black sometimes
-			newBrightness = mix(brightness, newBrightness, EYE_ADAPTATION);
+			newBrightness = mix(brightness, newBrightness, 0.5 * frameTime);
 		else
 			newBrightness = brightness;
 

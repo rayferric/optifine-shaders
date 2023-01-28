@@ -44,21 +44,15 @@ void main() {
 	color = clamp(mix(vec3(luminance(color)), color, SATURATION), 0.0, 1.0);
 	color = clamp(mix(vec3(0.5), color, CONTRAST), 0.0, 1.0);
 	color = linearToGamma(color);
-	color = dither8x8(color, gl_FragCoord.xy, 255.0);
-
-	// float wind = 0.0;
-	// float noise = texture2D(noisetex, v_TexCoord*0.125    + wind * 0.25).x * 7.0;
-	// 	noise+= texture2D(noisetex, v_TexCoord*0.0625   + wind * 0.15).x * 12.0;
-	// 	noise+= texture2D(noisetex, v_TexCoord*0.03125  + wind * 0.05).x * 12.0;
-	// 	noise+= texture2D(noisetex, v_TexCoord*0.015625 + wind * 0.05).x * 24.0;
-	// noise *= 0.014;
-	// color= vec3(noise);
+	color = dither8X8(color, gl_FragCoord.xy, 255.0);
 	
 	gl_FragData[0].xyz = color;
 	gl_FragData[0].w   = 1.0;
 
 #ifdef SHOW_DEBUG_OUTPUT
-	gl_FragData[0] = texture2D(colortex7, v_TexCoord);
+	if (v_TexCoord.x < 0.25 && v_TexCoord.y < 0.25) {
+		gl_FragData[0] = texture2D(colortex7, v_TexCoord * 4.0);
+	}
 #endif
 }
 

@@ -84,7 +84,7 @@ bool isInShadow(in vec3 worldPos) {
 #define SHADOW_MAX_PENUMBRA 0.2 // In meters
 #define SHADOW_SUN_ANGULAR_RADIUS (0.0087 * 4.0) // In radians, not physically accurate
 
-vec3 softShadow(in vec3 worldPos, in vec3 normal, in vec3 lightDir, in bool fakeSss = false) {
+vec3 softShadow(in vec3 worldPos, in vec3 normal, in vec3 lightDir, in bool fakeSss) {
 	// Transform position to shadow camera space and compute bias
 
 	vec3 shadowViewPos = (shadowModelView * vec4(worldPos, 1.0)).xyz;
@@ -111,7 +111,7 @@ vec3 softShadow(in vec3 worldPos, in vec3 normal, in vec3 lightDir, in bool fake
 		offsetShadowClipPos *= getShadowDistortionFactor(offsetShadowClipPos);
 		vec2 shadowUv = offsetShadowClipPos * 0.5 + 0.5;
 
-		float occluderDepth = texture2D(shadowtex0, shadowUv).x;
+		float occluderDepth = texture2D(shadowtex1, shadowUv).x;
 		float inShadow = step(occluderDepth, shadowDepth);
 		occlusionDepth += occluderDepth * inShadow;
 		occludedSamples += inShadow;
@@ -144,6 +144,10 @@ vec3 softShadow(in vec3 worldPos, in vec3 normal, in vec3 lightDir, in bool fake
 		#endif
 	}
 	return mix(vec3(1.0), color / float(SOFT_SHADOW_SAMPLES), opacity);;
+}
+
+vec3 softShadow(in vec3 worldPos, in vec3 normal, in vec3 lightDir) {
+	return softShadow(worldPos, normal, lightDir, false);
 }
 
 #endif // SHADOW_GLSL

@@ -110,7 +110,7 @@ vec2 decode16BitVec2(in float value) {
 	uint i = uint(value * 4294967295.0 + 0.5); // * (2 ^ 16 - 1)
 
 	uint x = i >> 8;
-	uint y = i & 0xFFUU;
+	uint y = i & 0xFFU;
 
 	return vec2(x, y) / 255.0;
 }

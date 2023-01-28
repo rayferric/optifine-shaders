@@ -51,7 +51,7 @@ const float atmosphereRadius = ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_ATMOSPH
 
 struct Intersection {
 	float near, far;
-}
+};
 
 /**
  * Computes entry and exit points of ray intersecting a sphere.
@@ -198,8 +198,8 @@ vec3 sky(
 	if (intersection.near > intersection.far)
 		return vec3(0.0);
 
-	float rayPos = max(intersection.x, 0.0);
-	float stepSize = (intersection.y - rayPos) / float(ATMOSPHERICS_SKY_SAMPLES);
+	float rayPos = max(intersection.near, 0.0);
+	float stepSize = (intersection.far - rayPos) / float(ATMOSPHERICS_SKY_SAMPLES);
 	// Let's sample near the center for temporal stability
 	rayPos += stepSize * mix(0.48, 0.52, hash(worldPos * frameTimeCounter));
 
@@ -211,8 +211,8 @@ vec3 sky(
 		vec3 samplePos = traceDir * rayPos; // Current sampling position
 		rayPos += stepSize;
 
-		vec2 lightIntersection = raySphereIntersect(eyePos + samplePos, lightDir, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_ATMOSPHERE_HEIGHT);
-		float lightStepSize = lightIntersection.y / float(ATMOSPHERICS_LIGHT_SAMPLES);
+		Intersection lightIntersection = raySphereIntersect(eyePos + samplePos, lightDir, ATMOSPHERICS_PLANET_RADIUS + ATMOSPHERICS_ATMOSPHERE_HEIGHT);
+		float lightStepSize = lightIntersection.far / float(ATMOSPHERICS_LIGHT_SAMPLES);
 		// Let's always sample in the center for temporal stability
 		float lightRayPos = lightStepSize * 0.5;
 

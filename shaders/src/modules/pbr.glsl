@@ -88,7 +88,8 @@ vec3 cookTorrance(
 		in vec3  normal,
 		in vec3  lightDir,
 		in vec3  viewDir,
-		in bool  fakeSss = false) {
+		in bool  fakeSss
+		) {
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	
 	float cosNl = max(dot(normal, lightDir), 0.0);
@@ -107,6 +108,16 @@ vec3 cookTorrance(
 	vec3 specularEnergy = specular * D * G / max(4.0 * cosNv * cosNl, EPSILON);  
 		
 	return max(diffuseEnergy + specularEnergy, 0.0);
+}
+
+vec3 cookTorrance(
+		in vec3  albedo,
+		in float roughness,
+		in float metallic,
+		in vec3  normal,
+		in vec3  lightDir,
+		in vec3  viewDir) {
+	return cookTorrance(albedo, roughness, metallic, normal, lightDir, viewDir, false);
 }
 
 #endif // PBR_GLSL

@@ -1,5 +1,7 @@
 screen.POST_PROCESSING=Post-Processing
-screen.LIGHTING_AND_SHADOWS=Lighting & Shadows
+screen.SHADING=Shading
+screen.WAVING=Waving
+screen.DEBUG=Debug
 
 option.EXPOSURE=Exposure
 option.EXPOSURE.comment=Exposure correction. Higher values give brighter image. No performance impact.
@@ -9,20 +11,76 @@ option.SATURATION=Saturation
 option.SATURATION.comment=Color saturation. Higher values give more colorful image. No performance impact.
 option.CONTRAST=Contrast
 option.CONTRAST.comment=Color harshness. Higher values give more readable image. No performance impact.
+option.BLOOM_INTENSITY=Bloom Intensity
+option.BLOOM_INTENSITY.comment=Bloom brightness. Higher vales give brighter highlights. No performance impact unless OFF.
+option.EYE_ADAPTATION=Eye Adaptation
+option.EYE_ADAPTATION.comment=Automatic exposure adjustment speed. No performance impact.
 
-option.shadowMapResolution=Shadow Resolution
-option.shadowMapResolution.comment=Resolution of the shadow depth buffer. Higher values give more detailed shadows. Moderate performance impact.
-option.SHADOW_FILTER=Shadow Filter
-option.SHADOW_FILTER.comment=Shadow interpolation. Performance impact scales with colored shadows. Moderate/High performance impact.
-option.COLORED_SHADOWS=Colored Shadows
-option.COLORED_SHADOWS.comment=Whether translucent blocks cast colored shadows. Performance impact scales with shadow filter. Low/Moderate performance impact.
+option.shadowMapResolution=Shadow Quality
+option.shadowMapResolution.comment=Resolution of the shadow depth buffer. Higher values give more detailed shadows. High performance impact.
+option.SOFT_SHADOW_SAMPLES=Soft Shadow
+option.SOFT_SHADOW_SAMPLES.comment=Number of samples used during shadow softening. Higher values make penumbra less noisy. Moderate performance impact.
+option.VARIABLE_PENUMBRA_SHADOW=Variable Penumbra Shadow
+option.VARIABLE_PENUMBRA_SHADOW.comment=Contact-hardened shadow. Moderate performance impact.
+option.COLORED_SHADOW=Colored Shadow
+option.COLORED_SHADOW.comment=Whether translucent blocks cast colored shadows. Performance impact scales with shadow quality. Moderate performance impact.
+option.CONTACT_SHADOW_SAMPLES=Contact Shadow
+option.CONTACT_SHADOW_SAMPLES.comment=Ray marched micro-shading that conceals Peter panning. Moderate performance impact.
 option.SUN_TEMPERATURE=Sunlight Temperature
 option.SUN_TEMPERATURE.comment=Color temperature of sunlight in Kelvin. Higher values give brighter, more blue-ish color. No performance impact.
 option.MOON_TEMPERATURE=Moonlight Temperature
 option.MOON_TEMPERATURE.comment=Color temperature of moonlight in Kelvin. Higher values give brighter, more blue-ish color. No performance impact.
-option.TORCH_TEMPERATURE=Torchlight Temperature
-option.TORCH_TEMPERATURE.comment=Color temperature of light emitted by torches in Kelvin. Higher values give brighter, more blue-ish color. No performance impact.
-option.TORCH_FALLOFF=Torchlight Falloff
-option.TORCH_FALLOFF.comment=Falloff exponent of light emitted by torches. Higher values give smaller light radius. No performance impact.
+option.BLOCK_TEMPERATURE=Blocklight Temperature
+option.BLOCK_TEMPERATURE.comment=Color temperature of light emitted by blocks in Kelvin. Higher values give brighter, more blue-ish color. No performance impact.
+option.BLOCK_FALLOFF=Blocklight Falloff
+option.BLOCK_FALLOFF.comment=Falloff exponent of light emitted by blocks. Higher values give smaller light radius. No performance impact.
 option.SKY_FALLOFF=Sky Energy Falloff
 option.SKY_FALLOFF.comment=Falloff exponent of sky contribution. Higher values make sky energy less influential in interior areas. No performance impact.
+option.SSAO_SAMPLES=SSAO Quality
+option.SSAO_SAMPLES.comment=Number of distinct samples used during SSAO computation. Higher values make shading less noisy. Moderate performance impact.
+
+option.WAVING_AMPLITUDE=Amplitude
+option.WAVING_AMPLITUDE.comment=Waving amplitude scale. Higher values make waving more appearent. No performance impact.
+option.WAVING_FREQUENCY=Frequency
+option.WAVING_FREQUENCY.comment=Waving frequency scale. Higher values make waving faster. No performance impact.
+option.WAVING_WATER=Waving Water
+option.WAVING_WATER.comment=Water wave displacement. Low performance impact.
+option.WAVING_LAVA=Waving Lava
+option.WAVING_LAVA.comment=Lava wave displacement. Low performance impact.
+option.WAVING_LEAVES=Waving Leaves
+option.WAVING_LEAVES.comment=Leaf wave displacement. Low performance impact.
+option.WAVING_FIRE=Waving Fire
+option.WAVING_FIRE.comment=Fire wave displacement. Low performance impact.
+option.WAVING_SINGLE_PLANTS=Waving Single-Plants
+option.WAVING_SINGLE_PLANTS.comment=Single-block plant wave displacement. Low performance impact.
+option.WAVING_MULTI_PLANTS=Waving Multi-Plants
+option.WAVING_MULTI_PLANTS.comment=Multi-block plant wave displacement. Low performance impact.
+
+option.SHOW_DEBUG_OUTPUT=Show Debug Output
+option.SHOW_DEBUG_OUTPUT.comment=Override shader stages to show debug buffer contents.
+
+value.BLOOM_INTENSITY.-2=OFF
+value.BLOOM_INTENSITY.-1=Low
+value.BLOOM_INTENSITY.0=Medium
+value.BLOOM_INTENSITY.1=High
+
+value.EYE_ADAPTATION.0.01=Slow
+value.EYE_ADAPTATION.0.05=Fast
+
+value.shadowMapResolution.1024=Low
+value.shadowMapResolution.2048=Medium
+value.shadowMapResolution.4096=High
+
+value.SOFT_SHADOW_SAMPLES.4=Low
+value.SOFT_SHADOW_SAMPLES.8=Medium
+value.SOFT_SHADOW_SAMPLES.12=High
+
+value.CONTACT_SHADOW_SAMPLES.0=OFF
+value.CONTACT_SHADOW_SAMPLES.4=Low
+value.CONTACT_SHADOW_SAMPLES.8=Medium
+value.CONTACT_SHADOW_SAMPLES.12=High
+
+value.SSAO_SAMPLES.0=OFF
+value.SSAO_SAMPLES.4=Low
+value.SSAO_SAMPLES.8=Medium
+value.SSAO_SAMPLES.16=High

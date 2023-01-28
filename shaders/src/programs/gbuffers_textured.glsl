@@ -60,7 +60,7 @@ void main() {
 #include "/src/modules/material_properties.glsl"
 #include "/src/modules/wave.glsl"
 
-/* DRAWBUFFERS:234 */
+/* DRAWBUFFERS:2347 */
 
 void main() {
 	MaterialProperties properties = makeMaterialProperties();
@@ -113,6 +113,10 @@ void main() {
 	gl_FragData[2].xy = linearToGamma(v_AmbientLight);
 	gl_FragData[2].z  = encodeMask(mask);
 	gl_FragData[2].w  = 1.0;
+
+	// colortex7: Debug
+		gl_FragData[3].xyz = hashToSphereDir(v_Entity * 2139.0) * 0.5 + 0.5;
+		gl_FragData[3].w   = 1.0;
 }
 
 #endif // FSH

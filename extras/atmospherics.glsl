@@ -127,7 +127,8 @@ vec3 atmosphere(
 ) {
 	// Intersect the atmosphere
 	vec2 intersect = raySphereIntersect(pos, dir, atmosphereRadius);
-	if (intersect.x > intersect.y)return color;
+	if (intersect.x > intersect.y)
+		return color;
 	
 	float rayPos = max(intersect.x, 0.0);
 	float step = (min(intersect.y, depth) - rayPos) / float(samples); // min(intersect.y, depth) ensures that the tracing ends on collision

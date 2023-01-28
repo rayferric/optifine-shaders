@@ -43,7 +43,7 @@ void main() {
 	vec3 lightDir = normalize(shadowLightPosition);
 
 	if (depth == 1.0) { // Sky
-		gl_FragData[0].xyz = sky(worldPos, lightDir, true) * SUN_ILLUMINANCE * 10.0;
+		gl_FragData[0].xyz = sky(worldPos, lightDir) * SUN_ILLUMINANCE * 10.0;
 		// gl_FragData[0].xyz =  vec3(0.0);
 		gl_FragData[0].w   = 1.0;
 

@@ -15,6 +15,7 @@ uniform float fogStart;
 uniform float fogEnd;
 uniform int   worldTime;
 uniform int   frameCounter;
+uniform float frameTime;
 uniform float frameTimeCounter;
 uniform float viewWidth;
 uniform float viewHeight;
