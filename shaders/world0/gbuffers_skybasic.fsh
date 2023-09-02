@@ -1,8 +1,7 @@
-#version 120
+#version 460 compatibility
 
 #define FSH
 #define OVERWORLD
 
-#include "/src/common/common_geometry.glsl"
-
+#include "/src/common/gbuffers_shadow_fsh.glsl"
 #include "/src/programs/gbuffers_skybasic.glsl"

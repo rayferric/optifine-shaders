@@ -1,3 +1,9 @@
+// Scene brightness is evaluated here and used to adjust the exposure. The
+// resulting color is then tone-mapped and written back to the HDR buffer.
+// This stage is also responsible for blending in auto-exposure cache into the
+// history. It additionally caches many other things for the next frame thus
+// executing the workload only once per frame instead of for every pixel.
+
 varying vec2 v_TexCoord;
 
 ///////////////////
@@ -20,53 +26,63 @@ void main() {
 
 #ifdef FSH
 
-#include "/src/modules/encode.glsl"
-#include "/src/modules/halton.glsl"
 #include "/src/modules/hash.glsl"
 #include "/src/modules/luminance.glsl"
+#include "/src/modules/pack.glsl"
+#include "/src/modules/sky.glsl"
 #include "/src/modules/tonemap.glsl"
 
-/* DRAWBUFFERS:01 */
+#include "/src/modules/gamma.glsl"
 
-// Auto exposure and tonemapping
-
+#define AUTO_EXPOSURE_LUMINANCE_SAMPLES 10
 void main() {
-	float brightness = tonemapCustomReinhardInverse(encode8BitVec3(
-		texture2D(colortex0, vec2(0.5 / viewWidth, 0.5 / viewHeight)).xyz
-	), 4.0);
+	float exposure = pack8BitVec3(
+	    texture(colortex0, vec2(0.5 / viewWidth, 0.5 / viewHeight)).xyz
+	);
+	exposure = exposure * (MAX_EXPOSURE - MIN_EXPOSURE) + MIN_EXPOSURE;
 
-	if (gl_FragCoord.x < 1.0 && gl_FragCoord.y < 1.0) {
-		float maxLod = log2(viewHeight);
-		float newBrightness = 0.0;
-		for (int i = 0; i < 5; i++) {
-			newBrightness += luminance(
-				texture2DLod(colortex1, halton16[(i + frameCounter) % 16], float(i)).xyz
-			);
+	if (gl_FragCoord.y < 1.0 && gl_FragCoord.x < 1.0) {
+		// auto-exposure: x = 0
+		float lum = 0.0;
+		for (int i = 0; i < AUTO_EXPOSURE_LUMINANCE_SAMPLES; i++) {
+			vec2 uv = hash(hash(fract(vec3(
+			                   frameTimeCounter * float(i),
+			                   frameTimeCounter * float(i) * 2.0,
+			                   frameTimeCounter * float(i) * 3.0
+			               ))))
+			              .xy;
+			lum += luminance(textureLod(colortex1, uv, 4).xyz);
 		}
-		newBrightness *= 0.2;
+		lum /= float(AUTO_EXPOSURE_LUMINANCE_SAMPLES);
 
-		if (newBrightness > EPSILON) // OptiFine mipmapping likes to flicker with pure black sometimes
-			newBrightness = mix(brightness, newBrightness, 0.5 * frameTime);
-		else
-			newBrightness = brightness;
+		float newExposure = 0.2 / lum;
+		// float newExposure = 5.0;
+		newExposure = clamp(newExposure, MIN_EXPOSURE, MAX_EXPOSURE);
+		newExposure = pow(newExposure, 0.5);
+		exposure    = pow(exposure, 0.5);
+		newExposure = mix(exposure, newExposure, frameTime);
+		newExposure = pow(newExposure, 2.0);
+		exposure    = pow(exposure, 2.0);
 
-		newBrightness = clamp(newBrightness, MIN_SCENE_BRIGHTNESS, MAX_SCENE_BRIGHTNESS);
+		exposure = (newExposure - MIN_EXPOSURE) / (MAX_EXPOSURE - MIN_EXPOSURE);
 
-		// colortex0: Temporal History
-		gl_FragData[0].xyz = decode8BitVec3(tonemapCustomReinhard(newBrightness, 4.0));
+		gl_FragData[0].xyz = unpack8BitVec3(exposure);
 		gl_FragData[0].w   = 1.0;
 	} else {
-		// colortex0: Temporal History
-		gl_FragData[0] = texture2D(colortex0, v_TexCoord);
+		// colortex0: temporal history
+		gl_FragData[0] = texture(colortex0, v_TexCoord);
 	}
 
-	vec3 hdr = texture2D(colortex1, v_TexCoord).xyz;
-	hdr /= 10.0 * brightness; // EXPOSURE
-	hdr = tonemapAces(hdr);
+	// HDR Tonemapping
+	vec3 hdr = texture(colortex1, v_TexCoord).xyz;
+	hdr      *= exposure;
+	hdr      = tonemapAces(hdr);
 
-	// colortex1: HDR Buffer
+	// colortex1: HDR multipurpose
 	gl_FragData[1].xyz = hdr;
 	gl_FragData[1].w   = 1.0;
 }
+
+/* DRAWBUFFERS:01 */
 
 #endif // FSH

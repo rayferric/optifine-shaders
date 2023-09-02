@@ -6,7 +6,8 @@
 
 vec3 hashWave(in vec3 phaseSeed, in float freq) {
 	float scaledTime = frameTimeCounter * freq * WAVING_FREQUENCY;
-	vec3 phase = vec3(hash(phaseSeed.xyz), hash(phaseSeed.yzx), hash(phaseSeed.zxy));
+	vec3  phase =
+	    vec3(hash(phaseSeed.xyz), hash(phaseSeed.yzx), hash(phaseSeed.zxy));
 	return sin(2.0 * PI * (scaledTime + phase));
 }
 
@@ -16,7 +17,8 @@ vec3 getBlockWave(in vec3 phaseSeed, in vec3 entity, in bool isTopVertex) {
 
 	vec3 offset = vec3(0.0);
 
-	if (false) {}
+	if (false) {
+	}
 
 #ifdef WAVING_WATER
 	else if (isWater(entity)) {
@@ -76,23 +78,45 @@ vec3 getBlockWave(in vec3 phaseSeed, in vec3 entity, in bool isTopVertex) {
 }
 
 // Dir length is inversely proportional to wave length
-float gerstnerWave(in vec2 origin, in vec2 dir, in float freq, in float steepness) {
+float gerstnerWave(
+    in vec2 origin, in vec2 dir, in float freq, in float steepness
+) {
 	float scaledTime = frameTimeCounter * freq * WAVING_FREQUENCY;
-	return pow(sin(origin.x * dir.x + origin.y * dir.y + scaledTime) * 0.5 + 0.5, steepness);
+	return pow(
+	    sin(origin.x * dir.x + origin.y * dir.y + scaledTime) * 0.5 + 0.5,
+	    steepness
+	);
 }
 
 float getWaterWaveHeight(in vec2 worldPos) {
-	return 0.02 * (
-		0.1 * gerstnerWave(worldPos, 4.0  * normalize(vec2(4.0, 5.0)), 2.0, 0.5) +
-		0.1 * gerstnerWave(worldPos, 6.0  * normalize(vec2(1.0, -4.0)), 5.0, 0.5) +
-		0.1 * gerstnerWave(worldPos, 7.0  * normalize(vec2(-8.0, 7.0)), 2.0, 0.5) +
-		0.1 * gerstnerWave(worldPos, 8.0  * normalize(vec2(4.0, 9.0)), 5.0, 0.5) +
-		0.1 * gerstnerWave(worldPos, 3.0  * normalize(vec2(-4.0, 1.0)), 2.0, 0.5) +
-		0.1 * gerstnerWave(worldPos, 4.0 * normalize(vec2(7.0, -2.0)), 3.0, 0.5) +
-		0.1 * gerstnerWave(worldPos, 5.0  * normalize(vec2(1.0, 7.0)), 5.0, 0.5) +
-		0.1 * gerstnerWave(worldPos, 4.0  * normalize(vec2(8.0, 3.0)), 2.0, 0.5) +
-		0.1 * gerstnerWave(worldPos, 5.0  * normalize(vec2(-1.0, 2.0)), 3.0, 0.5)
-	);
+	return 0.02 *
+	       (0.1 * gerstnerWave(
+	                  worldPos, 4.0 * normalize(vec2(4.0, 5.0)), 2.0, 0.5
+	              ) +
+	        0.1 * gerstnerWave(
+	                  worldPos, 6.0 * normalize(vec2(1.0, -4.0)), 5.0, 0.5
+	              ) +
+	        0.1 * gerstnerWave(
+	                  worldPos, 7.0 * normalize(vec2(-8.0, 7.0)), 2.0, 0.5
+	              ) +
+	        0.1 * gerstnerWave(
+	                  worldPos, 8.0 * normalize(vec2(4.0, 9.0)), 5.0, 0.5
+	              ) +
+	        0.1 * gerstnerWave(
+	                  worldPos, 3.0 * normalize(vec2(-4.0, 1.0)), 2.0, 0.5
+	              ) +
+	        0.1 * gerstnerWave(
+	                  worldPos, 4.0 * normalize(vec2(7.0, -2.0)), 3.0, 0.5
+	              ) +
+	        0.1 * gerstnerWave(
+	                  worldPos, 5.0 * normalize(vec2(1.0, 7.0)), 5.0, 0.5
+	              ) +
+	        0.1 * gerstnerWave(
+	                  worldPos, 4.0 * normalize(vec2(8.0, 3.0)), 2.0, 0.5
+	              ) +
+	        0.1 * gerstnerWave(
+	                  worldPos, 5.0 * normalize(vec2(-1.0, 2.0)), 3.0, 0.5
+	              ));
 }
 
 vec3 getWaterWaveNormal(in vec2 worldPos) {
@@ -106,6 +130,5 @@ vec3 getWaterWaveNormal(in vec2 worldPos) {
 
 	return normalize(cross(v1, v2));
 }
-
 
 #endif // WAVE_GLSL

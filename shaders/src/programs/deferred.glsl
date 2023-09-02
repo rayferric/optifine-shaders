@@ -20,91 +20,93 @@ void main() {
 
 #ifdef FSH
 
-#include "/src/modules/atmospherics.glsl"
-#include "/src/modules/encode.glsl"
+#include "/src/modules/clouds.glsl"
 #include "/src/modules/gamma.glsl"
-#include "/src/modules/kelvin_to_rgb.glsl"
-#include "/src/modules/material_mask.glsl"
+#include "/src/modules/pack.glsl"
 #include "/src/modules/pbr.glsl"
 #include "/src/modules/screen_to_view.glsl"
 #include "/src/modules/shadow.glsl"
+#include "/src/modules/sky.glsl"
 #include "/src/modules/ssao.glsl"
 
-/* DRAWBUFFERS:1 */
-
-// Opaque shading pass
+#include "/src/modules/tonemap.glsl"
 
 void main() {
-	float depth = texture2D(depthtex0, v_TexCoord).x;
-	vec3 viewPos = screenToView(v_TexCoord, depth);
-	vec3 worldPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
+	float depth = texture(depthtex0, v_TexCoord).x;
 
-	vec3 viewDir = normalize(-viewPos);
-	vec3 lightDir = normalize(shadowLightPosition);
+	vec3 viewFragPos  = screenToView(v_TexCoord, depth);
+	vec3 localFragPos = (gbufferModelViewInverse * vec4(viewFragPos, 1.0)).xyz;
 
-	if (depth == 1.0) { // Sky
-		gl_FragData[0].xyz = sky(worldPos, lightDir) * SUN_ILLUMINANCE * 10.0;
-		// gl_FragData[0].xyz =  vec3(0.0);
-		gl_FragData[0].w   = 1.0;
+	vec3 viewEyeDir  = -normalize(viewFragPos);
+	vec3 worldEyeDir = normalize(mat3(gbufferModelViewInverse) * viewEyeDir);
 
-		// vec4 clouds = traceClouds(worldPos, lightDir);
-		// clouds.xyz *= SUN_ILLUMINANCE * 10.0;
-		// gl_FragData[0].xyz = mix(gl_FragData[0].xyz, clouds.xyz, clouds.w);
+	vec3 worldSunDir =
+	    normalize(mat3(gbufferModelViewInverse) * normalize(sunPosition));
+	vec3 worldMoonDir =
+	    normalize(mat3(gbufferModelViewInverse) * normalize(moonPosition));
+	vec3 viewLightDir = normalize(shadowLightPosition);
+
+	vec3 hdr = vec3(0.0);
+
+	// Sky
+	if (depth == 1.0) {
+		hdr += sky(worldEyeDir, worldSunDir, worldMoonDir);
 	} else {
-		vec3 normal = decodeNormal(texture2D(colortex2, v_TexCoord).xy);
+		vec3  albedo = gammaToLinear(texture(colortex2, v_TexCoord).xyz);
+		vec3  roughnessMetallic = texture(colortex3, v_TexCoord).xyz;
+		float roughness         = roughnessMetallic.x;
+		float metallic          = roughnessMetallic.y;
+		vec3  viewNormal   = unpackNormal(texture2D(colortex4, v_TexCoord).xy);
+		vec2  ambientLight = gammaToLinear(texture(colortex5, v_TexCoord).xy);
 
-		vec3 albedoOpacityRm = texture2D(colortex3, v_TexCoord).xyz;
-		vec2 rg = decode8BitVec2(albedoOpacityRm.x);
-		vec2 bo = decode8BitVec2(albedoOpacityRm.y);
-		vec2 rm = decode8BitVec2(albedoOpacityRm.z);
-		vec3 albedo     = gammaToLinear(vec3(rg, bo.x));
-		float opacity   = bo.y;
-		float roughness = rm.x;
-		float metallic  = rm.y;
+		vec3 skyLight = ambientLight.x * skyIndirect(worldSunDir, worldMoonDir);
+		vec3 blockLight = ambientLight.y * BLOCK_LIGHT_ENERGY;
+		vec3 sunLight   = skyDirectSun(worldSunDir);
 
-		vec3 ambientLightMask = texture2D(colortex4, v_TexCoord).xyz;
-		vec2 ambientLight = gammaToLinear(ambientLightMask.xy);
-		MaterialMask mask = decodeMask(ambientLightMask.z);
-
-		float cosNv = max(dot(normal, viewDir), 0.0);
-
-		vec3 coloredShadowLightIlluminance = kelvinToRgb(SUN_TEMPERATURE) * SUN_ILLUMINANCE;
-		vec3 coloredBlockIlluminance  = kelvinToRgb(BLOCK_TEMPERATURE) * BLOCK_ILLUMINANCE;
-
-		vec3 shadowLightColor = softShadow(worldPos, normal, lightDir, mask.isFoliage);
-		if (!mask.isFoliage)
-			shadowLightColor *= contactShadow(viewPos, lightDir);
-		vec3 shadowLightContribution = cookTorrance(albedo, roughness, metallic, normal, lightDir, viewDir, mask.isFoliage);
-		vec3 shadowLightEnergy = (coloredShadowLightIlluminance * shadowLightColor) * shadowLightContribution;
-		shadowLightEnergy *= smoothstep(0.0, 0.01, ambientLight.x); // Cave light leak fix
-
-		// Ambient specular energy is computed in composite
-		vec3 specular = mix(vec3(0.04), albedo, metallic);
-		specular = fresnelSchlick(cosNv, specular, roughness);
-		vec3 ambientDiffuseContribution = (vec3(1.0) - specular) * (1.0 - metallic) * albedo;
-		vec3 skyDiffuseEnergy   = (coloredShadowLightIlluminance * 0.125 * ambientLight.x) * ambientDiffuseContribution;
-		vec3 blockDiffuseEnergy = (coloredBlockIlluminance * ambientLight.y) * ambientDiffuseContribution;
-		vec3 emissionEnergy     = mask.isEmissive ? albedo * EMISSION_ILLUMINANCE : vec3(0.0);
-		emissionEnergy *= emissionEnergy;
-		vec3 ambientEnergy = 0.025 * ambientDiffuseContribution;
-		ambientEnergy = vec3(0.0);
-
-		skyDiffuseEnergy *= computeSsao(viewPos, normal, depthtex0);
-
-		vec3 totalEnergy = shadowLightEnergy + skyDiffuseEnergy + blockDiffuseEnergy + emissionEnergy + ambientEnergy;
-		// totalEnergy = mix(totalEnergy, vec3(SUN_ILLUMINANCE * 10.0), atmosphere(worldPos, lightDir, false));
-
-		vec3 worldPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
-		float fogFactor = smoothstep(far - 24.0 - 50.0, far - 24.0, length(worldPos));
-		// if (fogFactor > EPSILON) {
-		// 	vec3 skyEnergy = atmosphere(worldPos, lightDir, true) * SUN_ILLUMINANCE * 10.0;
-		// 	totalEnergy = mix(totalEnergy, skyEnergy, fogFactor);
+		vec3 shadowColor =
+		    softShadow(localFragPos, viewNormal, viewLightDir, false);
+		// if (!mask.isFoliage) {
+		// 	shadowColor *= contactShadow(viewPos, sunDir);
 		// }
+		vec3 directContrib = directContribution(
+		    albedo,
+		    roughness,
+		    metallic,
+		    viewNormal,
+		    viewEyeDir,
+		    viewLightDir,
+		    false
+		);
+		hdr += directContrib * shadowColor * sunLight;
 
-		// colortex1: HDR Buffer
-		gl_FragData[0].xyz = totalEnergy;
-		gl_FragData[0].w   = 1.0;
+		IndirectContribution indirectContrib = indirectContribution(
+		    albedo, roughness, metallic, viewNormal, viewEyeDir
+		);
+		vec3 indirect = (indirectContrib.diffuse + indirectContrib.specular) *
+		                (skyLight + blockLight);
+		indirect *= computeSsao(viewFragPos, viewNormal, depthtex0);
+		hdr      += indirect;
+
+		// hdr += (skyLight + blockLight) * albedo +
+		//        albedo * shadowColor * sunLight *
+		//            max(dot(viewNormal, viewLightDir), 0.0) / 3.141;
+		hdr = fog(hdr, localFragPos, worldSunDir, worldMoonDir);
 	}
+
+	// vec4 clouds = clouds(
+	//     localViewDir,
+	//     worldSunDir,
+	//     cameraPosition,
+	//     0.7,
+	//     depth == 1.0 ? INFINITY : length(pos)
+	// );
+
+	// hdr = mix(hdr, clouds.xyz, clouds.w);
+
+	gl_FragData[0].xyz = hdr;
+	gl_FragData[0].w   = 1.0;
 }
+
+/* DRAWBUFFERS:1 */
 
 #endif // FSH

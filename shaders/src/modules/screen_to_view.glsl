@@ -2,10 +2,9 @@
 #define SCREEN_TO_VIEW_GLSL
 
 #include "/src/modules/normalized_mul.glsl"
-#include "/src/modules/temporal_jitter.glsl"
 
 /**
- * Converts screen space 2D coordinates
+ * @brief Converts screen space 2D coordinates
  * to view space position.
  *
  * @param screenPos screen space position
@@ -14,12 +13,13 @@
  * @return view space position
  */
 vec3 screenToView(in vec2 screenPos, in float depth) {
-	vec2 temporalOffset = getTemporalOffset();
-	return normalizedMul(gbufferProjectionInverse, vec3(screenPos - temporalOffset, depth) * 2.0 - 1.0);
+	return normalizedMul(
+	    gbufferProjectionInverse, vec3(screenPos, depth) * 2.0 - 1.0
+	);
 }
 
 /**
- * Converts screen space 2D coordinates
+ * @brief Converts screen space 2D coordinates
  * to view space position.
  *
  * @param screenPos screen space position
@@ -28,7 +28,7 @@ vec3 screenToView(in vec2 screenPos, in float depth) {
  * @return view space position
  */
 vec3 screenToView(in vec2 screenPos, in sampler2D depthTex) {
-	float depth = texture2D(depthTex, screenPos).x;
+	float depth = texture(depthTex, screenPos).x;
 	return screenToView(screenPos, depth);
 }
 

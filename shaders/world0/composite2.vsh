@@ -1,9 +1,7 @@
-#version 120
+#version 460 compatibility
 
 #define VSH
 #define OVERWORLD
 
-#include "/src/common/common_deferred.glsl"
-#include "/src/common/vertex_attributes.glsl"
-
+#include "/src/common/composite_deferred_final_vsh.glsl"
 #include "/src/programs/composite2.glsl"

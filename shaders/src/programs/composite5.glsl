@@ -22,13 +22,13 @@ void main() {
 
 #include "/src/modules/bloom.glsl"
 
-/* DRAWBUFFERS:1 */
-
-// Vertical bloom atlas blur
+// vertical bloom atlas blur
 
 void main() {
 	gl_FragData[0].xyz = blurBloomAtlas(colortex1, v_TexCoord, true);
 	gl_FragData[0].w   = 1.0;
 }
+
+/* DRAWBUFFERS:1 */
 
 #endif // FSH

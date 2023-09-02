@@ -2,7 +2,7 @@
 #define IS_INSIDE_RECT_GLSL
 
 /**
- * Tests whether a 2D point is inside a rectangle.
+ * @brief Tests whether a 2D point is inside a rectangle.
  *
  * @param pos        point to test
  * @param bottomLeft bottom right vertex of the rectangle

@@ -2,7 +2,7 @@
 #define GAMMA_GLSL
 
 /**
- * Converts value from gamma to linear space.
+ * @brief Converts value from gamma to linear space.
  *
  * @param value value in gamma space
  *
@@ -13,7 +13,7 @@ float gammaToLinear(in float value) {
 }
 
 /**
- * Converts value from linear to gamma space.
+ * @brief Converts value from linear to gamma space.
  *
  * @param value value in linear space
  *
@@ -24,7 +24,7 @@ float linearToGamma(in float value) {
 }
 
 /**
- * Converts value from gamma to linear space.
+ * @brief Converts value from gamma to linear space.
  *
  * @param value value in gamma space
  *
@@ -35,7 +35,7 @@ vec2 gammaToLinear(in vec2 value) {
 }
 
 /**
- * Converts value from linear to gamma space.
+ * @brief Converts value from linear to gamma space.
  *
  * @param value value in linear space
  *
@@ -46,7 +46,7 @@ vec2 linearToGamma(in vec2 value) {
 }
 
 /**
- * Converts value from gamma to linear space.
+ * @brief Converts value from gamma to linear space.
  *
  * @param value value in gamma space
  *
@@ -57,7 +57,7 @@ vec3 gammaToLinear(in vec3 value) {
 }
 
 /**
- * Converts value from linear to gamma space.
+ * @brief Converts value from linear to gamma space.
  *
  * @param value value in linear space
  *

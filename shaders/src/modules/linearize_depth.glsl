@@ -2,7 +2,7 @@
 #define LINEARIZE_DEPTH_GLSL
 
 /**
- * Converts player camera normalized depth to
+ * @brief Converts player camera normalized depth to
  * linear value between the clipping planes.
  *
  * @param depth non-linear depth in range [0, 1]

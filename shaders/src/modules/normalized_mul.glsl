@@ -2,8 +2,8 @@
 #define NORMALIZED_MUL
 
 /**
- * Transforms position using 4x4 matrix and
- * normalizes resulting homogeneous coordinates. 
+ * @brief Transforms position using 4x4 matrix and
+ * normalizes resulting homogeneous coordinates.
  *
  * @param matrix transformation matrix
  * @param pos    source position

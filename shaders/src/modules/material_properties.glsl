@@ -2,11 +2,11 @@
 #define MATERIAL_PROPERTIES
 
 #include "/src/modules/blocks.glsl"
+#include "/src/modules/hsv.glsl"
 #include "/src/modules/luminance.glsl"
-#include "/src/modules/rgb_to_hsv.glsl"
 
 struct MaterialProperties {
-	vec3 albedo;
+	vec3  albedo;
 	float opacity;
 	float roughness;
 	float metallic;
@@ -26,21 +26,22 @@ MaterialProperties makeMaterialProperties() {
 }
 
 /**
- * Remaps material properties for an entity.
+ * @brief Remaps material properties for an entity.
  *
  * @param properties MaterialProperties instance
  * @param entity     entity data
  *
  * @return modified MaterialProperties instance
  */
-MaterialProperties remapMaterialProperties(in MaterialProperties properties, in vec3 entity) {
+MaterialProperties
+remapMaterialProperties(in MaterialProperties properties, in vec3 entity) {
 	int id = int(entity.x + 0.5);
-	
+
 	properties.roughness = min(properties.roughness, 0.8);
 
 	if (isWater(entity)) {
-		properties.albedo  = WATER_ALBEDO_OPACITY.xyz;
-		properties.opacity = WATER_ALBEDO_OPACITY.w;
+		properties.albedo    = WATER_ALBEDO_OPACITY.xyz;
+		properties.opacity   = WATER_ALBEDO_OPACITY.w;
 		properties.roughness = 0.005;
 		properties.metallic  = 1.0;
 		properties.emission  = 0.0;
@@ -59,37 +60,40 @@ MaterialProperties remapMaterialProperties(in MaterialProperties properties, in 
 		// Redstone: Torch, Wire, Rail, Block, Comparator, Repeater
 		vec3 hsv = rgbToHsv(properties.albedo);
 		if (hsv.y > 0.5 && hsv.x < 0.05 || hsv.z > 0.95) { // Find red spots
-			properties.albedo *= 0.5;
+			properties.albedo   *= 0.5;
 			properties.emission = 1.0;
 		}
 	} else if (id == 10014 || id == 10015) {
 		// Lit Redstone Ore
-		vec3 hsv = rgbToHsv(properties.albedo);
+		vec3 hsv            = rgbToHsv(properties.albedo);
 		properties.emission = step(0.2, hsv.y);
 	} else if (id == 10018) {
 		// Glow Lichen
-		properties.albedo *= luminance(properties.albedo) * 2.0;
+		properties.albedo   *= luminance(properties.albedo) * 2.0;
 		properties.emission = 1.0;
 	}
 
-// #ifdef GLOWING_ORES
+	// #ifdef GLOWING_ORES
 	else if (id >= 10000 && id <= 10013) {
 		// Unlit Ores
-		vec3 hsv = rgbToHsv(properties.albedo);
+		vec3 hsv            = rgbToHsv(properties.albedo);
 		properties.emission = step(0.2, hsv.y);
-		properties.albedo = min(properties.albedo * mix(1.0, 2.0, properties.emission), 1.0);
+		properties.albedo =
+		    min(properties.albedo * mix(1.0, 2.0, properties.emission), 1.0);
 	} else if (id == 10016) {
 		// Nether Gold Ore
-		vec3 hsv = rgbToHsv(properties.albedo);
+		vec3 hsv            = rgbToHsv(properties.albedo);
 		properties.emission = step(0.02, hsv.x);
-		properties.albedo = min(properties.albedo * mix(1.0, 2.0, properties.emission), 1.0);
+		properties.albedo =
+		    min(properties.albedo * mix(1.0, 2.0, properties.emission), 1.0);
 	} else if (id == 10017) {
 		// Quartz Ore
-		vec3 hsv = rgbToHsv(properties.albedo);
+		vec3 hsv            = rgbToHsv(properties.albedo);
 		properties.emission = step(0.3, 1.0 - hsv.y);
-		properties.albedo = min(properties.albedo * mix(1.0, 2.0, properties.emission), 1.0);
+		properties.albedo =
+		    min(properties.albedo * mix(1.0, 2.0, properties.emission), 1.0);
 	}
-// #endif
+	// #endif
 
 	return properties;
 }

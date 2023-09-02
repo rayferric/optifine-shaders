@@ -7,7 +7,7 @@
 #define TEMPORAL_JITTER_RADIUS 1.0
 
 /**
- * Computes random subpixel offset unique to this frame.
+ * @brief Computes random subpixel offset unique to this frame.
  *
  * @return screen space offset
  */

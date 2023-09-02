@@ -1,8 +1,7 @@
-#version 120
+#version 460 compatibility
 
 #define FSH
 #define OVERWORLD
 
-#include "/src/common/common_deferred.glsl"
-
+#include "/src/common/composite_deferred_final_fsh.glsl"
 #include "/src/programs/composite3.glsl"

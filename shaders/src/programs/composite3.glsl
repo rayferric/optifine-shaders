@@ -21,15 +21,14 @@ void main() {
 #ifdef FSH
 
 #include "/src/modules/bloom.glsl"
-#include "/src/modules/gamma.glsl"
 
-/* DRAWBUFFERS:1 */
-
-// Mipmapping for bloom
+// mipmapping emulation for the bloom effect
 
 void main() {
 	gl_FragData[0].xyz = writeBloomAtlas(colortex1, v_TexCoord);
 	gl_FragData[0].w   = 1.0;
 }
+
+/* DRAWBUFFERS:1 */
 
 #endif // FSH

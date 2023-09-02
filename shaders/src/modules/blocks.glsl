@@ -2,7 +2,7 @@
 #define BLOCKS_GLSL
 
 /**
- * Tells whether the entity is a single plant, i.e.
+ * @brief Tells whether the entity is a single plant, i.e.
  * its bottom vertices should touch the ground.
  *
  * @param entity entity data
@@ -11,25 +11,24 @@
  */
 bool isSinglePlant(in vec3 entity) {
 	int id = int(entity.x + 0.5);
-	return 
-			id == 6   || // Sapling
-			id == 31  || // Dead Shrub
-			id == 32  || // Grass
-			id == 37  || // Dandelion
-			id == 38  || // Poppy + Other Flowers
-			id == 39  || // Brown Mushroom
-			id == 40  || // Red Mushroom
-			id == 59  || // Wheat Crops
-			id == 104 || // Pumpkin Stem
-			id == 105 || // Melon Stem
-			id == 115 || // Nether Wart
-			id == 141 || // Carrots
-			id == 142 || // Potatoes
-			id == 207;   // Betroots
+	return id == 6 ||   // Sapling
+	       id == 31 ||  // Dead Shrub
+	       id == 32 ||  // Grass
+	       id == 37 ||  // Dandelion
+	       id == 38 ||  // Poppy + Other Flowers
+	       id == 39 ||  // Brown Mushroom
+	       id == 40 ||  // Red Mushroom
+	       id == 59 ||  // Wheat Crops
+	       id == 104 || // Pumpkin Stem
+	       id == 105 || // Melon Stem
+	       id == 115 || // Nether Wart
+	       id == 141 || // Carrots
+	       id == 142 || // Potatoes
+	       id == 207;   // Betroots
 }
 
 /**
- * Tells whether the entity is a multi-block
+ * @brief Tells whether the entity is a multi-block
  * plant, that does not have a stable base.
  *
  * @param entity entity data
@@ -43,7 +42,7 @@ bool isMultiPlant(in vec3 entity) {
 }
 
 /**
- * Tells whether the entity is plant.
+ * @brief Tells whether the entity is plant.
  *
  * @param entity entity data
  *
@@ -54,7 +53,7 @@ bool isPlant(in vec3 entity) {
 }
 
 /**
- * Tells whether the entity is water.
+ * @brief Tells whether the entity is water.
  *
  * @param entity entity data
  *
@@ -67,7 +66,7 @@ bool isWater(in vec3 entity) {
 }
 
 /**
- * Tells whether the entity is lava.
+ * @brief Tells whether the entity is lava.
  *
  * @param entity entity data
  *
@@ -80,7 +79,7 @@ bool isLava(in vec3 entity) {
 }
 
 /**
- * Tells whether the entity is ice.
+ * @brief Tells whether the entity is ice.
  *
  * @param entity entity data
  *
@@ -91,7 +90,7 @@ bool isIce(in vec3 entity) {
 }
 
 /**
- * Tells whether the entity is fire.
+ * @brief Tells whether the entity is fire.
  *
  * @param entity entity data
  *
@@ -102,7 +101,7 @@ bool isFire(in vec3 entity) {
 }
 
 /**
- * Tells whether the entity is stained glass.
+ * @brief Tells whether the entity is stained glass.
  *
  * @param entity entity data
  *
@@ -115,7 +114,7 @@ bool isStainedGlass(in vec3 entity) {
 }
 
 /**
- * Tells whether the entity is translucent.
+ * @brief Tells whether the entity is translucent.
  *
  * @param entity entity data
  *
@@ -128,7 +127,7 @@ bool isTranslucent(in vec3 entity) {
 }
 
 /**
- * Tells whether the entity is leaves.
+ * @brief Tells whether the entity is leaves.
  *
  * @param entity entity data
  *

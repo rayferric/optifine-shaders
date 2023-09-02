@@ -8,9 +8,10 @@
 
 #define SSAO_RADIUS   0.25
 #define SSAO_EXPONENT 0.75
+#define SSAO_SAMPLES  4
 
 /**
- * Approximates ambient occlusion in screen space.
+ * @brief Approximates ambient occlusion in screen space.
  *
  * @param viewPos  fragment position in view space
  * @param normal   fragment normal
@@ -26,16 +27,23 @@ float computeSsao(in vec3 viewPos, in vec3 normal, in sampler2D depthTex) {
 	float aoStrength = 0.0;
 
 	for (int i = 0; i < SSAO_SAMPLES; i++) {
-		vec3 unitOffset = hashToHemisphereOffset(frameTimeCounter * viewPos + float(i), normal);
+		vec3 unitOffset = hashToHemisphereOffset(
+		    frameTimeCounter * viewPos + float(i), normal
+		);
+		unitOffset     = normalize(unitOffset + normal * 0.01);
 		vec3 samplePos = viewPos + (unitOffset * SSAO_RADIUS);
 		vec2 coord = normalizedMul(gbufferProjection, samplePos).xy * 0.5 + 0.5;
-		
-		vec2 temporalOffset = getTemporalOffset();
 
-		float bufferDistance = linearizeDepth(texture2D(depthTex, coord + temporalOffset).x);
-		
-		float rangeFactor = smoothstep(0.0, 1.0, SSAO_RADIUS / distance(bufferDistance, -samplePos.z));
-		aoStrength += float(bufferDistance < -samplePos.z) * rangeFactor;
+#ifdef TAA
+		vec2  temporalOffset = getTemporalOffset();
+		float bufferDistance =
+		    linearizeDepth(texture2D(depthTex, coord + temporalOffset).x);
+#else
+		float bufferDistance = linearizeDepth(texture2D(depthTex, coord).x);
+#endif
+
+		aoStrength += step(bufferDistance, -samplePos.z) *
+		              step(-samplePos.z, bufferDistance + SSAO_RADIUS);
 	}
 
 	return pow(1.0 - (aoStrength / float(SSAO_SAMPLES)), SSAO_EXPONENT);

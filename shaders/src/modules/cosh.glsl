@@ -2,8 +2,9 @@
 #define COSH_GLSL
 
 /**
- * Returns the hyperbolic cosine of the parameter.
- * This function normally requires "#version 130" or later to be globally defined.
+ * @brief Returns the hyperbolic cosine of the parameter.
+ * This function normally requires "#version 130" or later to be globally
+ * defined.
  *
  * @param doubleArea twice the area of hyperbolic sector
  *

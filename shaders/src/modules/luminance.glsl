@@ -1,8 +1,10 @@
 #ifndef LUMINANCE_GLSL
 #define LUMINANCE_GLSL
 
+#include "/src/modules/gamma.glsl"
+
 /**
- * Converts linear color to luminance.
+ * @brief Converts linear color to luminance.
  *
  * @param color linear color
  *
@@ -13,15 +15,14 @@ float luminance(in vec3 color) {
 }
 
 /**
- * Converts sRGB color to gamma space luminance.
+ * @brief Converts sRGB color to gamma space luminance.
  *
  * @param color sRGB color
  *
  * @return luminance in gamma space
  */
 float luma(in vec3 color) {
-	// return linearToGamma(luminance(gammaToLinear(color)));
-	return dot(color, vec3(0.4947, 0.8587, 0.3028));
+	return linearToGamma(luminance(gammaToLinear(color)));
 }
 
 #endif // LUMINANCE_GLSL

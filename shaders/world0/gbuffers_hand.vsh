@@ -1,9 +1,7 @@
-#version 120
+#version 460 compatibility
 
 #define VSH
 #define OVERWORLD
 
-#include "/src/common/common_geometry.glsl"
-#include "/src/common/vertex_attributes.glsl"
-
+#include "/src/common/gbuffers_shadow_vsh.glsl"
 #include "/src/programs/gbuffers_hand.glsl"

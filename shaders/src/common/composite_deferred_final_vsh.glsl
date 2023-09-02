@@ -1,0 +1,6 @@
+#include "/src/common/_attributes.glsl"
+#include "/src/common/_macros.glsl"
+#include "/src/common/_optifine.glsl"
+#include "/src/common/_settings.glsl"
+#include "/src/common/_uniforms.glsl"
+#include "/src/common/_uniforms_composite_deferred.glsl"
