@@ -27,7 +27,7 @@ vec3 hash(in vec3 value) {
 /**
  * @brief Computes uniformly distributed random direction on unit circle.
  *
- * @param value saturated 3D vector
+ * @param value saturated 3D seed
  *
  * @return normalized direction vector
  */
@@ -39,7 +39,7 @@ vec2 hashToCircleDir(in vec3 value) {
 /**
  * @brief Computes uniformly distributed random direction on unit sphere.
  *
- * @param value saturated 3D vector
+ * @param value saturated 3D seed
  *
  * @return normalized direction vector
  */

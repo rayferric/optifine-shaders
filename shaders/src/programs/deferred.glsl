@@ -21,15 +21,17 @@ void main() {
 #ifdef FSH
 
 #include "/src/modules/clouds.glsl"
-#include "/src/modules/gamma.glsl"
-#include "/src/modules/pack.glsl"
+#include "/src/modules/gbuffer.glsl"
 #include "/src/modules/pbr.glsl"
 #include "/src/modules/screen_to_view.glsl"
 #include "/src/modules/shadow.glsl"
 #include "/src/modules/sky.glsl"
 #include "/src/modules/ssao.glsl"
 
-#include "/src/modules/tonemap.glsl"
+// This deferred pass generates partial HDR lighting for non-translucent
+// materials.
+// Indirect specular irradiance is omitted and will be added in subsequent
+// passes.
 
 void main() {
 	float depth = texture(depthtex0, v_TexCoord).x;
@@ -46,67 +48,63 @@ void main() {
 	    normalize(mat3(gbufferModelViewInverse) * normalize(moonPosition));
 	vec3 viewLightDir = normalize(shadowLightPosition);
 
-	vec3 hdr = vec3(0.0);
+	GBuffer gbuffer = sampleGBuffer(v_TexCoord);
 
-	// Sky
-	if (depth == 1.0) {
-		hdr += sky(worldEyeDir, worldSunDir, worldMoonDir);
-	} else {
-		vec3  albedo = gammaToLinear(texture(colortex2, v_TexCoord).xyz);
-		vec3  roughnessMetallic = texture(colortex3, v_TexCoord).xyz;
-		float roughness         = roughnessMetallic.x;
-		float metallic          = roughnessMetallic.y;
-		vec3  viewNormal   = unpackNormal(texture2D(colortex4, v_TexCoord).xy);
-		vec2  ambientLight = gammaToLinear(texture(colortex5, v_TexCoord).xy);
+	vec3 skyLight   = gbuffer.skyLight * skyIndirect(worldSunDir, worldMoonDir);
+	vec3 blockLight = gbuffer.blockLight * BLOCK_LIGHT_ENERGY;
+	vec3 sunLight   = skyDirectSun(worldSunDir);
 
-		vec3 skyLight = ambientLight.x * skyIndirect(worldSunDir, worldMoonDir);
-		vec3 blockLight = ambientLight.y * BLOCK_LIGHT_ENERGY;
-		vec3 sunLight   = skyDirectSun(worldSunDir);
+	if (gbuffer.layer == GBUFFER_LAYER_SKY) {
+		outColor0.xyz = sky(-worldEyeDir, worldSunDir, worldMoonDir);
+	}
 
-		vec3 shadowColor =
-		    softShadow(localFragPos, viewNormal, viewLightDir, false);
-		// if (!mask.isFoliage) {
-		// 	shadowColor *= contactShadow(viewPos, sunDir);
-		// }
-		vec3 directContrib = directContribution(
-		    albedo,
-		    roughness,
-		    metallic,
-		    viewNormal,
+	if (gbuffer.layer == GBUFFER_LAYER_OPAQUE) {
+		IndirectContribution indirect = indirectContribution(
+		    gbuffer.albedo,
+		    gbuffer.roughness,
+		    gbuffer.metallic,
+		    0.0, // transmissive
+		    gbuffer.normal,
+		    viewEyeDir
+		);
+		vec3 hdr  = indirect.diffuse * (skyLight + blockLight);
+		hdr      *= computeSsao(viewFragPos, gbuffer.normal, depthtex0);
+		// (indirect specular will be added once SSR is available)
+
+		vec3 direct = directContribution(
+		    gbuffer.albedo,
+		    gbuffer.roughness,
+		    gbuffer.metallic,
+		    0.0, // transmissive
+		    gbuffer.normal,
 		    viewEyeDir,
 		    viewLightDir,
 		    false
 		);
-		hdr += directContrib * shadowColor * sunLight;
+		direct *= softShadow(localFragPos, gbuffer.normal, viewLightDir, false);
+		hdr    += direct * sunLight;
 
-		IndirectContribution indirectContrib = indirectContribution(
-		    albedo, roughness, metallic, viewNormal, viewEyeDir
-		);
-		vec3 indirect = (indirectContrib.diffuse + indirectContrib.specular) *
-		                (skyLight + blockLight);
-		indirect *= computeSsao(viewFragPos, viewNormal, depthtex0);
-		hdr      += indirect;
-
-		// hdr += (skyLight + blockLight) * albedo +
-		//        albedo * shadowColor * sunLight *
-		//            max(dot(viewNormal, viewLightDir), 0.0) / 3.141;
-		hdr = fog(hdr, localFragPos, worldSunDir, worldMoonDir);
+		outColor0.xyz = hdr;
 	}
 
-	// vec4 clouds = clouds(
-	//     localViewDir,
-	//     worldSunDir,
-	//     cameraPosition,
-	//     0.7,
-	//     depth == 1.0 ? INFINITY : length(pos)
-	// );
+	// if (gbuffer.layer == GBUFFER_LAYER_BASIC) {
+	// 	// Billboard entities do not have proper normals,
+	// 	// so they are lit using a custom model.
 
-	// hdr = mix(hdr, clouds.xyz, clouds.w);
+	// 	// simplified non-PBR shading model
+	// 	vec3 indirect = gbuffer.albedo;
+	// 	vec3 hdr      = indirect * (skyLight + blockLight);
+	// 	vec3 direct   = gbuffer.albedo / PI;
+	// 	direct *= softShadow(localFragPos, vec3(0.0), viewLightDir, true);
+	// 	// (fakeSss = true disables normal-based bias)
+	// 	hdr += direct * sunLight;
 
-	gl_FragData[0].xyz = hdr;
-	gl_FragData[0].w   = 1.0;
+	// 	outColor0.xyz = hdr;
+	// }
+
+	outColor0.w = 1.0;
 }
 
-/* DRAWBUFFERS:1 */
+/* RENDERTARGETS: 5 */
 
 #endif // FSH

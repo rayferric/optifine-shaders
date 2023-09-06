@@ -25,10 +25,11 @@ void main() {
 // vertical bloom atlas blur
 
 void main() {
-	gl_FragData[0].xyz = blurBloomAtlas(colortex1, v_TexCoord, true);
-	gl_FragData[0].w   = 1.0;
+	// outColor0.xyz = blurBloomAtlas(colortex5, v_TexCoord, true);
+	// outColor0.w   = 1.0;
+	outColor0 = texture(colortex0, v_TexCoord);
 }
 
-/* DRAWBUFFERS:1 */
+/* RENDERTARGETS: 0 */
 
 #endif // FSH

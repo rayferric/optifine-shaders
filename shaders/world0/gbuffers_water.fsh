@@ -4,4 +4,4 @@
 #define OVERWORLD
 
 #include "/src/common/forward_fsh.glsl"
-#include "/src/programs/gbuffers_skybasic.glsl"
+#include "/src/programs/gbuffers_water.glsl"

@@ -1,7 +1,0 @@
-#version 460 compatibility
-
-#define FSH
-#define OVERWORLD
-
-#include "/src/common/gbuffers_shadow_fsh.glsl"
-#include "/src/programs/gbuffers_textured.glsl"

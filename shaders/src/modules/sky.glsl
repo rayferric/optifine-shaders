@@ -19,8 +19,8 @@ float simpleTonemap(in float value) {
 
 #define SKY_COLOR          vec3(0.0, 0.3, 0.8)
 #define SKY_ACCENT_COLOR   vec3(0.4, 0.8, 1.0)
-#define SKY_SUNLIGHT_COLOR vec3(0.8, 0.6, 0.05)
-#define SKY_HORIZON_COLOR  vec3(1.0, 0.2, 0.1)
+#define SKY_SUNLIGHT_COLOR vec3(0.8, 0.6, 0.1)
+#define SKY_HORIZON_COLOR  vec3(1.0, 0.3, 0.2)
 vec3 fakeAtmosphere(in vec3 viewDir, in vec3 lightDir) {
 	// base sky color
 	vec3 sky = SKY_COLOR;
@@ -46,11 +46,11 @@ vec3 fakeAtmosphere(in vec3 viewDir, in vec3 lightDir) {
 
 	// sunlight tint
 	float lightTimeFactor = 1.0 - smoothstep(0.2, 0.5, lightDir.y);
-	float lightViewFactor = simpleTonemap(exp(-viewDir.y * 10.0));
+	float lightViewFactor = simpleTonemap(exp(-viewDir.y * 5.0));
 	sky = mix(sky, SKY_SUNLIGHT_COLOR, lightViewFactor * lightTimeFactor);
 
 	// horizon color
-	float horizonViewFactor = simpleTonemap(exp(-viewDir.y * 20.0) * 0.2);
+	float horizonViewFactor = simpleTonemap(exp(-viewDir.y * 20.0) * 0.8);
 	sky = mix(sky, SKY_HORIZON_COLOR, horizonViewFactor * lightTimeFactor);
 
 	// second sky luminance pass to dim the sunset light
@@ -152,9 +152,6 @@ vec3 stars(in vec3 viewDir, float quantity) {
 
 #define SKY_NIGHT_TINT vec3(0.0, 0.7, 1.0)
 vec3 sky(in vec3 viewDir, in vec3 sunDir, in vec3 moonDir) {
-	// viewDir points into the camera, so let's reverse it.
-	viewDir = -viewDir;
-
 	vec3 sky      = vec3(0.0);
 	sky           += fakeAtmosphere(viewDir, sunDir) * SKY_SUN_LUMINANCE;
 	vec3 nightSky = fakeAtmosphere(viewDir, moonDir);

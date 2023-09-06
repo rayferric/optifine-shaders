@@ -34,10 +34,9 @@ void main() {
 
 #include "/src/modules/gamma.glsl"
 
-#define AUTO_EXPOSURE_LUMINANCE_SAMPLES 10
 void main() {
 	float exposure = pack8BitVec3(
-	    texture(colortex0, vec2(0.5 / viewWidth, 0.5 / viewHeight)).xyz
+	    texture(colortex6, vec2(0.5 / viewWidth, 0.5 / viewHeight)).xyz
 	);
 	exposure = exposure * (MAX_EXPOSURE - MIN_EXPOSURE) + MIN_EXPOSURE;
 
@@ -51,7 +50,7 @@ void main() {
 			                   frameTimeCounter * float(i) * 3.0
 			               ))))
 			              .xy;
-			lum += luminance(textureLod(colortex1, uv, 4).xyz);
+			lum += luminance(textureLod(colortex5, uv, 4).xyz);
 		}
 		lum /= float(AUTO_EXPOSURE_LUMINANCE_SAMPLES);
 
@@ -66,23 +65,22 @@ void main() {
 
 		exposure = (newExposure - MIN_EXPOSURE) / (MAX_EXPOSURE - MIN_EXPOSURE);
 
-		gl_FragData[0].xyz = unpack8BitVec3(exposure);
-		gl_FragData[0].w   = 1.0;
+		outColor1.xyz = unpack8BitVec3(exposure);
+		outColor1.w   = 1.0;
 	} else {
-		// colortex0: temporal history
-		gl_FragData[0] = texture(colortex0, v_TexCoord);
+		// colortex6: temporal history
+		outColor1 = texture(colortex6, v_TexCoord);
 	}
 
 	// HDR Tonemapping
-	vec3 hdr = texture(colortex1, v_TexCoord).xyz;
+	vec3 hdr = texture(colortex5, v_TexCoord).xyz;
 	hdr      *= exposure;
-	hdr      = tonemapAces(hdr);
+	vec3 ldr = tonemapAces(hdr);
 
-	// colortex1: HDR multipurpose
-	gl_FragData[1].xyz = hdr;
-	gl_FragData[1].w   = 1.0;
+	outColor0.xyz = ldr;
+	outColor0.w   = 1.0;
 }
 
-/* DRAWBUFFERS:01 */
+/* RENDERTARGETS: 5,6 */
 
 #endif // FSH

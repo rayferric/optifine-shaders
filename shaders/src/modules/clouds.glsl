@@ -7,8 +7,8 @@
 #include "/src/modules/intersection.glsl"
 #include "/src/modules/sky.glsl"
 
-#define CLOUDS_CLOUD_COVERAGE_TEX       colortex14
-#define CLOUDS_CLOUD_DETAIL_TEX         colortex15
+#define CLOUDS_CLOUD_COVERAGE_TEX       colortex6
+#define CLOUDS_CLOUD_DETAIL_TEX         colortex5
 // radius of the hypothetical planet the bedrock layer is starting at
 #define CLOUDS_VIEW_RADIUS              10000.0
 // the radius of the cloud sphere above the surface of the planet
@@ -66,9 +66,9 @@ float cloudCoverage(in vec2 pos, in float factor) {
 	        .x;
 
 	coverage *= 0.33;
-	factor   = 1.0 - factor;
-	factor   = factor * 0.8;
-	coverage = smoothstep(factor, factor + 0.2, coverage);
+	factor    = 1.0 - factor;
+	factor    = factor * 0.8;
+	coverage  = smoothstep(factor, factor + 0.2, coverage);
 
 	return coverage;
 }
@@ -331,8 +331,8 @@ vec4 clouds(
 			    lightStepSize;
 		}
 
-		float density           = cloudDensity(samplePos, worldOffset, shape);
-		float opticalDepthDelta = density * stepSize;
+		float density            = cloudDensity(samplePos, worldOffset, shape);
+		float opticalDepthDelta  = density * stepSize;
 		opticalDepth            += opticalDepthDelta;
 
 		// direct light in-scattering
@@ -355,17 +355,17 @@ vec4 clouds(
 		}
 	}
 	backgroundVisibility -= 0.05;
-	backgroundVisibility = clamp(backgroundVisibility, 0.0, 1.0);
+	backgroundVisibility  = clamp(backgroundVisibility, 0.0, 1.0);
 
 	// Direct
 	float cosTheta          = dot(viewDir, lightDir);
 	vec3  inScatteredDirect = directScattering * CLOUDS_MIE_PROB *
-	                         phaseHenyeyGreenstein(cosTheta, CLOUDS_G) *
-	                         skyDirect(lightDir, true);
+	                         phaseHenyeyGreenstein(cosTheta, CLOUDS_G);
+	//  skyDirect(lightDir, true);
 
 	// Ambient
 	vec3 inScatteredAmbient =
-	    ambientScattering * CLOUDS_MIE_PROB * skyIndirect(lightDir);
+	    ambientScattering * CLOUDS_MIE_PROB; // * skyIndirect(...);
 
 	vec3  energy       = inScatteredDirect + inScatteredAmbient;
 	float cloudOpacity = 1.0 - backgroundVisibility;

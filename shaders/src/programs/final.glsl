@@ -26,10 +26,10 @@ void main() {
 #include "/src/modules/luminance.glsl"
 
 void main() {
-	vec3 color = texture(colortex0, v_TexCoord).xyz;
-	color      = gammaToLinear(color);
+	vec3 color = texture(colortex5, v_TexCoord).xyz;
+	// color      = gammaToLinear(color);
 
-	// vec3 bloom = readBloomAtlas(colortex1, v_TexCoord);
+	// vec3 bloom = readBloomAtlas(colortex5, v_TexCoord);
 	// color      = max(color, bloom);
 	// // color      = bloom;
 	// // color += bloom * 1.0;
@@ -41,16 +41,16 @@ void main() {
 
 	color = linearToGamma(color);
 
-	gl_FragData[0].xyz = color;
-	gl_FragData[0].w   = 1.0;
+	outColor0.xyz = color;
+	outColor0.w   = 1.0;
 
 #ifdef SHOW_DEBUG_OUTPUT
-	if (v_TexCoord.x < 0.5 && v_TexCoord.y < 0.5) {
-		gl_FragData[0] = texture(colortex6, v_TexCoord * 2.0);
+	if (v_TexCoord.x < 0.333 && v_TexCoord.y < 0.333) {
+		outColor0 = texture(colortex7, v_TexCoord * 3.0);
 	}
 #endif
 }
 
-/* DRAWBUFFERS:0 */
+/* RENDERTARGETS: 0 */
 
 #endif // FSH

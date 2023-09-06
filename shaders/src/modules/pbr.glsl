@@ -1,6 +1,8 @@
 #ifndef PBR_GLSL
 #define PBR_GLSL
 
+#include "/src/modules/rand_cone_dir.glsl"
+
 /**
  * @brief Approximates fresnel factor using Schlick's method.
  *
@@ -87,6 +89,23 @@ float geometrySmith(in float cosNl, in float cosNe, in float roughness) {
 	return geometrySmithG1(cosNl, k) * geometrySmithG1(cosNe, k);
 }
 
+vec3 importanceLambert(in vec2 rand, in vec3 normal) {
+	float theta = acos(2.0 * rand.x - 1.0) * 0.5;
+	return randConeDir(rand.y, normal, cos(theta));
+}
+
+vec3 importanceGgx(
+    in vec2 rand, in vec3 normal, in vec3 outcoming, in float roughness
+) {
+	roughness *= roughness;
+	roughness *= roughness;
+
+	float cosTheta = sqrt((1.0 - rand.x) / (1.0 + (roughness - 1.0) * rand.x));
+	vec3  halfway  = randConeDir(rand.y, normal, cosTheta);
+
+	return reflect(-outcoming, halfway);
+}
+
 // Approximates the two specular BRDF sub-integrals shown here:
 // https://learnopengl.com/PBR/IBL/Specular-IBL
 // .x = specular scale
@@ -135,6 +154,7 @@ vec3 directContribution(
     in vec3  albedo,
     in float roughness,
     in float metallic,
+    in float transmissive,
     in vec3  normal,
     in vec3  eyeDir,
     in vec3  lightDir,
@@ -150,6 +170,9 @@ vec3 directContribution(
 	vec3 specular = mix(vec3(0.04), albedo, metallic);
 	specular      = fresnelSchlick(cosHe, specular);
 	vec3 diffuse  = (vec3(1.0) - specular) * (1.0 - metallic) * albedo;
+	// vec3 transmitted = diffuse * transmissive;
+	// diffuse          -= transmitted;
+	diffuse *= (1.0 - transmissive); // equivalent
 
 	float d = distributionGgx(cosNh, roughness);
 	float g = geometrySmith(cosNl, cosNe, roughness);
@@ -166,12 +189,14 @@ vec3 directContribution(
 struct IndirectContribution {
 	vec3 diffuse;
 	vec3 specular;
+	vec3 transmitted;
 };
 
 IndirectContribution indirectContribution(
     in vec3  albedo,
     in float roughness,
     in float metallic,
+    in float transmissive,
     in vec3  normal,
     in vec3  eyeDir
 ) {
@@ -185,7 +210,10 @@ IndirectContribution indirectContribution(
 	vec2 brdf = approxBrdf(cosNe, roughness);
 	specular  = specular * brdf.x + brdf.y;
 
-	return IndirectContribution(diffuse, specular);
+	vec3 transmitted = diffuse * transmissive;
+	diffuse          -= transmitted;
+
+	return IndirectContribution(diffuse, specular, transmitted);
 }
 
 #endif // PBR_GLSL

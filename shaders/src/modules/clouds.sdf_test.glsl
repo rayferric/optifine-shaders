@@ -13,7 +13,7 @@
 // the radius of the enclosing sphere of the cloud sphere
 #define CLOUDS_OUTER_RADIUS 10200.0
 
-#define CLOUDS_CLOUD_TEX colortex15
+#define CLOUDS_CLOUD_TEX colortex5
 
 float cumulusSdf(in vec3 point, in vec3 seed) {
 	vec3 rand = hash(vec3(fract(seed * vec3(12.102312, 1349.33, 0.2132))));

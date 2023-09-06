@@ -12,8 +12,12 @@
  * @return screen space offset
  */
 vec2 getTemporalOffset() {
+#ifdef TAA
 	vec2 unitOffset = halton16[frameCounter % 16] * 2.0 - 1.0;
 	return TEMPORAL_JITTER_RADIUS * unitOffset / vec2(viewWidth, viewHeight);
+#else
+	return vec2(0.0);
+#endif
 }
 
 #endif // TEMPORAL_JITTER_GLSL

@@ -3,5 +3,5 @@
 #define VSH
 #define OVERWORLD
 
-#include "/src/common/composite_deferred_final_vsh.glsl"
+#include "/src/common/deferred_vsh.glsl"
 #include "/src/programs/composite4.glsl"

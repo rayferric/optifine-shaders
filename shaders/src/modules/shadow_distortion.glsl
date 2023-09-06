@@ -1,13 +1,6 @@
 #ifndef SHADOW_DISTORTION_FACTOR_GLSL
 #define SHADOW_DISTORTION_FACTOR_GLSL
 
-// Defines precision gain towards the center of the shadow map in range
-// (0.0, 1.0)
-#define SHADOW_MAP_DISTORTION_STRENGTH 0.9
-// How much the distorted shadow map is stretched to a rectangular shape [1.0,
-// inf)
-#define SHADOW_MAP_DISTORTION_STRETCH  5.0
-
 /**
  * @brief Computes vertex position scaling factor used
  * to direct more texels to areas close to camera.

@@ -26,22 +26,23 @@ void main() {
 #include "/src/modules/gamma.glsl"
 
 void main() {
-	// Pass-through the exposure temporal storage
-	if (gl_FragCoord.x < 1.0 && gl_FragCoord.y < 1.0) {
-		gl_FragData[0] = texture(colortex0, v_TexCoord);
-		return;
-	}
+	// // Pass-through the exposure temporal storage
+	// if (gl_FragCoord.x < 1.0 && gl_FragCoord.y < 1.0) {
+	// 	outColor0 = texture(colortex6, v_TexCoord);
+	// 	return;
+	// }
 
-	// Tone-mapped floating-point LDR
-	vec3 color = texture(colortex1, v_TexCoord).xyz;
+	// // Tone-mapped floating-point LDR
+	// vec3 ldr = texture(colortex5, v_TexCoord).xyz;
 
-	color = linearToGamma(color);
-	color = dither8X8(color, ivec2(gl_FragCoord.xy), 255);
+	// ldr = linearToGamma(ldr);
+	// ldr = dither8X8(ldr, ivec2(gl_FragCoord.xy), 255);
 
-	gl_FragData[0].xyz = color;
-	gl_FragData[0].w   = 1.0;
+	// outColor0.xyz = ldr;
+	// outColor0.w   = 1.0;
+	outColor0 = texture(colortex0, v_TexCoord);
 }
 
-/* DRAWBUFFERS:0 */
+/* RENDERTARGETS: 0 */
 
 #endif // FSH

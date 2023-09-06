@@ -43,10 +43,19 @@ void main() {
 
 #ifdef FSH
 
+#include "/src/modules/constants.glsl"
+
 void main() {
-	gl_FragData[0] = texture(texture, v_TexCoord) * v_Color;
+	vec4 color = texture(texture, v_TexCoord);
+	color      *= v_Color;
+
+	if (color.w < EPSILON) {
+		discard;
+	}
+
+	outColor0 = color;
 }
 
-/* DRAWBUFFERS:0 */
+/* RENDERTARGETS: 0 */
 
 #endif // FSH

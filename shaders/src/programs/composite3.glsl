@@ -25,10 +25,11 @@ void main() {
 // mipmapping emulation for the bloom effect
 
 void main() {
-	gl_FragData[0].xyz = writeBloomAtlas(colortex1, v_TexCoord);
-	gl_FragData[0].w   = 1.0;
+	// outColor0.xyz = writeBloomAtlas(colortex6, v_TexCoord);
+	// outColor0.w   = 1.0;
+	outColor0 = texture(colortex0, v_TexCoord);
 }
 
-/* DRAWBUFFERS:1 */
+/* RENDERTARGETS: 0 */
 
 #endif // FSH

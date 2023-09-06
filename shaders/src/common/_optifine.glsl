@@ -5,18 +5,22 @@
 // fail.
 // clang-format off
 /*
-const int colortex0Format = RGB8;    // temporal history
-const int colortex1Format = RGB16F;  // HDR multipurpose
-const int colortex2Format = RGB8;    // albedo
-const int colortex3Format = RGB8;    // roughness, metallic, material ID
-const int colortex4Format = RG16;    // normal
-const int colortex5Format = RG8;     // sky light, block light
-const int colortex6Format = RGB8;    // debug !IMPORTANT! comment out with // if unused
+// GBuffer
+const int colortex0Format = RGB8;    // albedo
+const int colortex1Format = RG16;    // normal
+const int colortex2Format = RGB8;    // roughness, metallic, subsurface
+const int colortex3Format = RGB8;    // emissive, occlusion, transmissive
+const int colortex4Format = RGB8;    // sky light, block light, ID
+// screen textures
+const int colortex5Format = R11F_G11F_B10F;  // HDR multipurpose
+const int colortex6Format = RGB8;    // temporal history
+const int colortex7Format = RGB8;    // debug !IMPORTANT! comment out with // if unused
+// shadow textures
 const int shadowcolor0Format = RGB8; // shadow color
 */
 // clang-format on
 
-const bool  colortex0Clear          = false; // temporal buffer
+const bool  colortex6Clear          = false; // temporal buffer
 const float sunPathRotation         = -30.0;
 const int   shadowMapResolution     = 2048;  // normal quality
 const float shadowDistance          = 256.0; // 16 chunks

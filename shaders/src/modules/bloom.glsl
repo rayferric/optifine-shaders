@@ -22,7 +22,7 @@ vec3 writeBloomAtlas(in sampler2D colorTex, in vec2 screenPos) {
 	screenPos *= exp2(lod1);
 
 	// Apply threshold
-	vec3 color = texture2DLod(colorTex, screenPos, lod1).xyz;
+	vec3 color = textureLod(colorTex, screenPos, lod1).xyz;
 	return smoothstep(
 	           BLOOM_MIN_THRESHOLD, BLOOM_MAX_THRESHOLD, luminance(color)
 	       ) *
@@ -52,7 +52,7 @@ vec3 blurBloomAtlas(in sampler2D atlas, in vec2 screenPos, in bool vertical) {
 
 		vec2 sampleCoord = screenPos + texelSize * offset;
 
-		color.xyz += texture2D(atlas, sampleCoord).xyz * weight;
+		color.xyz += texture(atlas, sampleCoord).xyz * weight;
 		color.w   += weight;
 	}
 	return color.xyz / color.w;
@@ -67,7 +67,7 @@ vec3 readBloomAtlas(in sampler2D atlas, in vec2 screenPos) {
 		tilePos      *= exp2(-float(lod)); // /= exp2(lod)
 		tilePos      += 1.0 - exp2(1.0 - float(lod));
 
-		vec3 level = texture2D(atlas, tilePos).xyz;
+		vec3 level = texture(atlas, tilePos).xyz;
 		color.xyz  += level * level * weight;
 		color.w    += weight;
 	}

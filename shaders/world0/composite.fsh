@@ -3,5 +3,5 @@
 #define FSH
 #define OVERWORLD
 
-#include "/src/common/composite_deferred_final_fsh.glsl"
+#include "/src/common/deferred_fsh.glsl"
 #include "/src/programs/composite.glsl"

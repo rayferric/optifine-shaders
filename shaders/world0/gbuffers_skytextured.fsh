@@ -3,5 +3,5 @@
 #define FSH
 #define OVERWORLD
 
-#include "/src/common/gbuffers_shadow_fsh.glsl"
+#include "/src/common/forward_fsh.glsl"
 #include "/src/programs/gbuffers_skytextured.glsl"

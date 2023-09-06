@@ -1,8 +1,8 @@
 #ifndef SSAO_GLSL
 #define SSAO_GLSL
 
+#include "/src/modules/depth.glsl"
 #include "/src/modules/hash.glsl"
-#include "/src/modules/linearize_depth.glsl"
 #include "/src/modules/normalized_mul.glsl"
 #include "/src/modules/temporal_jitter.glsl"
 
@@ -34,13 +34,9 @@ float computeSsao(in vec3 viewPos, in vec3 normal, in sampler2D depthTex) {
 		vec3 samplePos = viewPos + (unitOffset * SSAO_RADIUS);
 		vec2 coord = normalizedMul(gbufferProjection, samplePos).xy * 0.5 + 0.5;
 
-#ifdef TAA
 		vec2  temporalOffset = getTemporalOffset();
 		float bufferDistance =
-		    linearizeDepth(texture2D(depthTex, coord + temporalOffset).x);
-#else
-		float bufferDistance = linearizeDepth(texture2D(depthTex, coord).x);
-#endif
+		    linearizeDepth(texture(depthTex, coord + temporalOffset).x);
 
 		aoStrength += step(bufferDistance, -samplePos.z) *
 		              step(-samplePos.z, bufferDistance + SSAO_RADIUS);

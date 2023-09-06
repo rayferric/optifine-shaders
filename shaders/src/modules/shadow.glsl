@@ -81,13 +81,11 @@ float getShadowFadeOpacity(vec2 shadowClipPos, vec3 worldPos) {
  * @return shadow color
  */
 vec3 getShadowColor(in vec3 shadowCoord) {
-	float shading =
-	    step(shadowCoord.z, texture2D(shadowtex0, shadowCoord.xy).x);
+	float shading = step(shadowCoord.z, texture(shadowtex0, shadowCoord.xy).x);
 	float opaqueShading =
-	    step(shadowCoord.z, texture2D(shadowtex1, shadowCoord.xy).x);
+	    step(shadowCoord.z, texture(shadowtex1, shadowCoord.xy).x);
 
-	vec3 shadowColor =
-	    gammaToLinear(texture2D(shadowcolor0, shadowCoord.xy).xyz);
+	vec3 shadowColor = gammaToLinear(texture(shadowcolor0, shadowCoord.xy).xyz);
 
 	return (opaqueShading - shading) * shadowColor + shading;
 }
@@ -110,7 +108,7 @@ bool isInShadow(in vec3 worldPos) {
 	shadowClipPos.xy *= getShadowDistortionFactor(shadowClipPos.xy);
 	vec3 shadowCoord = shadowClipPos * 0.5 + 0.5;
 
-	return shadowCoord.z > texture2D(shadowtex0, shadowCoord.xy).x;
+	return shadowCoord.z > texture(shadowtex0, shadowCoord.xy).x;
 }
 
 #define VARIABLE_PENUMBRA_SHADOW
@@ -151,7 +149,7 @@ vec3 softShadow(
 		offsetShadowClipPos *= getShadowDistortionFactor(offsetShadowClipPos);
 		vec2 shadowUv       = offsetShadowClipPos * 0.5 + 0.5;
 
-		float occluderDepth = texture2D(shadowtex1, shadowUv).x;
+		float occluderDepth = texture(shadowtex1, shadowUv).x;
 		float inShadow      = step(occluderDepth, shadowDepth);
 		occlusionDepth      += occluderDepth * inShadow;
 		occludedSamples     += inShadow;
@@ -189,7 +187,7 @@ vec3 softShadow(
 #ifdef COLORED_SHADOW
 		color += getShadowColor(shadowCoord);
 #else
-		color += step(shadowCoord.z, texture2D(shadowtex1, shadowCoord.xy).x);
+		color += step(shadowCoord.z, texture(shadowtex1, shadowCoord.xy).x);
 #endif
 	}
 

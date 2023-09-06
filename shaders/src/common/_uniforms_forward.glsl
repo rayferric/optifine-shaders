@@ -2,10 +2,10 @@
 
 // https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt
 
-uniform sampler2D texture; // albedo, opacity
+uniform sampler2D texture; // See: /src/modules/lab_pbr.glsl; TODO: gtexture?
 uniform sampler2D lightmap;
-uniform sampler2D normals;
-uniform sampler2D specular; // perceptual smoothness, metalness, emission
+uniform sampler2D normals; // See: /src/modules/lab_pbr.glsl
+uniform sampler2D specular; // See: /src/modules/lab_pbr.glsl
 uniform sampler2D shadowtex0;
 uniform sampler2D shadowtex1;
 uniform sampler2D depthtex0;
