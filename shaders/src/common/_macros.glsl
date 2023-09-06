@@ -15,3 +15,12 @@
 // How much the distorted shadow map is stretched to a rectangular shape [1.0,
 // inf)
 #define SHADOW_MAP_DISTORTION_STRETCH  5.0
+
+#define CONTACT_SHADOW_RAY_LENGTH 0.3 // Ray marching distance
+#define CONTACT_SHADOW_BIAS                                                    \
+	0.02 // Offset ray origin to avoid self-shading at grazing angles
+#define CONTACT_SHADOW_TOLERANCE     0.05 // Max Z difference to score a hit
+#define CONTACT_SHADOW_VIEW_DISTANCE 12.0
+#define CONTACT_SHADOW_FADE_DISTANCE 2.0
+
+#define SOFT_SHADOW_SAMPLES 4

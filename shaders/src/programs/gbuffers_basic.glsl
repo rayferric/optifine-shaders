@@ -46,7 +46,7 @@ void main() {
 	}
 
 	GBuffer gbuffer;
-	gbuffer.albedo   = gammaToLinear(color.xyz);
+	gbuffer.albedo   = gammaToLinear(color.xyz) * 0.5;
 	gbuffer.emissive = 0.0; // TODO: set for glowing particles and world border?
 	gbuffer.skyLight = v_AmbientLight.x;
 	gbuffer.blockLight = v_AmbientLight.y;

@@ -28,7 +28,7 @@ RPSample sampleVanillaPBR(in vec2 texCoord) {
 	rp.albedo     = gammaToLinear(colorSample.xyz);
 	rp.opacity    = colorSample.w;
 	rp.smoothness = 0.0;
-	rp.roughness  = 1.0;
+	rp.roughness  = 0.8;
 	rp.metallic   = 0.0;
 	rp.porosity   = 0.0;
 	rp.subsurface = 0.0;

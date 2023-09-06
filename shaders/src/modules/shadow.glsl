@@ -6,16 +6,21 @@
 #include "/src/modules/normalized_mul.glsl"
 #include "/src/modules/pack.glsl"
 #include "/src/modules/raymarch.glsl"
-#include "/src/modules/shadow_distortion.glsl"
 
-#define CONTACT_SHADOW_RAY_LENGTH 0.3 // Ray marching distance
-#define CONTACT_SHADOW_BIAS                                                    \
-	0.02 // Offset ray origin to avoid self-shading at grazing angles
-#define CONTACT_SHADOW_TOLERANCE     0.05 // Max Z difference to score a hit
-#define CONTACT_SHADOW_VIEW_DISTANCE 12.0
-#define CONTACT_SHADOW_FADE_DISTANCE 2.0
-
-#define SOFT_SHADOW_SAMPLES 4
+/**
+ * @brief Computes vertex position scaling factor used
+ * to direct more texels to areas close to camera.
+ *
+ * @param pos undistorted position
+ *
+ * @return scaling factor, multiply it by pos to get remapped coordinate
+ */
+float getShadowDistortionFactor(in vec2 pos) {
+	vec2  p = pow(abs(pos), vec2(SHADOW_MAP_DISTORTION_STRETCH));
+	float d = pow(p.x + p.y, 1.0 / SHADOW_MAP_DISTORTION_STRETCH);
+	d       = mix(1.0, d, SHADOW_MAP_DISTORTION_STRENGTH);
+	return 1.0 / d;
+}
 
 float contactShadow(in vec3 viewPos, in vec3 lightDir) {
 #if CONTACT_SHADOW_SAMPLES != 0
@@ -86,6 +91,8 @@ vec3 getShadowColor(in vec3 shadowCoord) {
 	    step(shadowCoord.z, texture(shadowtex1, shadowCoord.xy).x);
 
 	vec3 shadowColor = gammaToLinear(texture(shadowcolor0, shadowCoord.xy).xyz);
+
+	return vec3(opaqueShading);
 
 	return (opaqueShading - shading) * shadowColor + shading;
 }
@@ -167,6 +174,10 @@ vec3 softShadow(
 #else
 	float penumbraRadius = SHADOW_MIN_PENUMBRA;
 #endif
+
+	if (fakeSss) {
+		penumbraRadius = SHADOW_MAX_PENUMBRA;
+	}
 
 	// Scale minimum penumbra radius with shadow resolution, so no
 	// self-shadowing occurs
