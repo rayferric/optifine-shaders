@@ -45,9 +45,9 @@ vec3 rttAndOdtFit(in vec3 color) {
  */
 vec3 tonemapAces(in vec3 color) {
 	color *= 1.8;
-	color = acesIn * color;
-	color = rttAndOdtFit(color);
-	color = acesOut * color;
+	color  = acesIn * color;
+	color  = rttAndOdtFit(color);
+	color  = acesOut * color;
 	return clamp(color, 0.0, 1.0);
 }
 

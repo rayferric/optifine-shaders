@@ -17,7 +17,7 @@ const float[8][8] bayer8X8 = float[8][8](
 // TODO: docs
 float dither8X8(in float value, in ivec2 pixelPos, in int quantizedMax) {
 	value            *= float(quantizedMax);
-	float floorValue = floor(value);
+	float floorValue  = floor(value);
 
 	float delta = value - floorValue;
 	float edge  = bayer8X8[pixelPos.x % 8][pixelPos.y % 8];

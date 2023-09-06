@@ -13,12 +13,12 @@
 // const int colortex4Format = RGB8;    // sky light, block light, ID
 // See: /src/common/_optifine.glsl
 
-#define GBUFFER_LAYER_SKY         100 // sky, clouds, sun, moon
-#define GBUFFER_LAYER_OPAQUE      1   // opaque, alpha-test
-#define GBUFFER_LAYER_TRANSLUCENT 2   // alpha-blend
-#define GBUFFER_LAYER_BASIC       3   // lines, particles
-#define GBUFFER_LAYER_WATER       4   // volumetric water
-#define GBUFFER_LAYER_ICE         5   // volumetric ice
+#define GBUFFER_LAYER_SKY         0 // sky, clouds, sun, moon
+#define GBUFFER_LAYER_OPAQUE      1 // opaque, alpha-test
+#define GBUFFER_LAYER_TRANSLUCENT 2 // alpha-blend
+#define GBUFFER_LAYER_BASIC       3 // lines, particles
+#define GBUFFER_LAYER_WATER       4 // volumetric water
+#define GBUFFER_LAYER_ICE         5 // volumetric ice
 
 /**
  * @brief Classifies materials.
@@ -43,6 +43,7 @@ struct GBuffer {
 	float opacity; // only basic surfaces
 };
 
+#ifdef DEFERRED
 GBuffer sampleGBuffer(in vec2 texCoord) {
 	GBuffer gbuffer;
 
@@ -70,7 +71,9 @@ GBuffer sampleGBuffer(in vec2 texCoord) {
 
 	return gbuffer;
 }
+#endif
 
+#ifdef FORWARD
 vec4 renderGBuffer0(in GBuffer gbuffer) {
 	vec3 data = linearToGamma(gbuffer.albedo);
 	return vec4(data, 1.0);
@@ -102,5 +105,6 @@ vec4 renderGBuffer4(in GBuffer gbuffer) {
 	data.y = dither8X8(data.y, ivec2(gl_FragCoord.xy), 255);
 	return vec4(data, 1.0);
 }
+#endif
 
 #endif // GBUFFER_GLSL

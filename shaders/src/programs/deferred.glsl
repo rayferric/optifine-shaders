@@ -51,7 +51,7 @@ void main() {
 	GBuffer gbuffer = sampleGBuffer(v_TexCoord);
 
 	vec3 skyLight   = gbuffer.skyLight * skyIndirect(worldSunDir, worldMoonDir);
-	vec3 blockLight = gbuffer.blockLight * BLOCK_LIGHT_ENERGY;
+	vec3 blockLight = gbuffer.blockLight * BLOCK_LIGHT_LUMINANCE;
 	vec3 sunLight   = skyDirectSun(worldSunDir);
 
 	if (gbuffer.layer == GBUFFER_LAYER_SKY) {

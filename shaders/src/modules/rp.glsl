@@ -106,7 +106,7 @@ RPSample sampleLabPBR(in vec2 texCoord) {
 }
 
 RPSample sampleRp(in vec2 texCoord) {
-#ifdef PBR_MODE == 0 // Vanilla PBR
+#if PBR_MODE == 0 // Vanilla PBR
 	return sampleVanillaPBR(texCoord);
 #elif PBR_MODE == 1 // LabPBR
 	return sampleLabPBR(texCoord);

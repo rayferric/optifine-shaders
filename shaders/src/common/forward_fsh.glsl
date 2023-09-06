@@ -4,3 +4,6 @@
 #include "/src/common/_settings.glsl"
 #include "/src/common/_uniforms.glsl"
 #include "/src/common/_uniforms_forward.glsl"
+
+#define FSH
+#define FORWARD

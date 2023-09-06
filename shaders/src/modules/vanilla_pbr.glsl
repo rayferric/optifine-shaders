@@ -3,8 +3,6 @@
 
 #include "/src/modules/gbuffer.glsl"
 
-GBuffer applyVanillaPbrToGBuffer(in GBuffer gbuffer) {
-    
-}
+GBuffer applyVanillaPbrToGBuffer(in GBuffer gbuffer) {}
 
 #endif // VANILLA_PBR_GLSL

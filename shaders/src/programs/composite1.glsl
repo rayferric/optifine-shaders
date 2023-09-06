@@ -73,9 +73,9 @@ void main() {
 	}
 
 	// HDR Tonemapping
-	vec3 hdr = texture(colortex5, v_TexCoord).xyz;
+	vec3 hdr  = texture(colortex5, v_TexCoord).xyz;
 	hdr      *= exposure;
-	vec3 ldr = tonemapAces(hdr);
+	vec3 ldr  = tonemapAces(hdr);
 
 	outColor0.xyz = ldr;
 	outColor0.w   = 1.0;

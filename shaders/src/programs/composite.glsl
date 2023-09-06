@@ -52,15 +52,14 @@ void main() {
 	GBuffer gbuffer = sampleGBuffer(v_TexCoord);
 
 	vec3 skyLight   = gbuffer.skyLight * skyIndirect(worldSunDir, worldMoonDir);
-	vec3 blockLight = gbuffer.blockLight * BLOCK_LIGHT_ENERGY;
+	vec3 blockLight = gbuffer.blockLight * BLOCK_LIGHT_LUMINANCE;
 	vec3 sunLight   = skyDirectSun(worldSunDir);
 
-	outColor0.xyz = vec3(1.0);
+	// outColor0.xyz = vec3(float(gbuffer.layer) / 3.0);
+	// return;
 
-	// Sky
 	if (gbuffer.layer == GBUFFER_LAYER_SKY) {
-		// outColor0.xyz = texture(colortex5, v_TexCoord).xyz;
-		outColor0.xyz = vec3(0.0, 1.0, 1.0);
+		outColor0.xyz = texture(colortex5, v_TexCoord).xyz;
 	}
 
 	if (gbuffer.layer == GBUFFER_LAYER_OPAQUE) {
@@ -97,7 +96,10 @@ void main() {
 			hdr                  += indirect.specular * reflectionLight;
 		}
 
-		outColor0.xyz = vec3(0.0, 0.0, 1.0);
+		vec3 emissionLight  = gbuffer.albedo * EMISSIVE_LUMINANCE;
+		hdr                += gbuffer.emissive * emissionLight;
+
+		outColor0.xyz = hdr;
 	}
 
 	if (gbuffer.layer == GBUFFER_LAYER_TRANSLUCENT) {
@@ -146,7 +148,7 @@ void main() {
 		direct *= softShadow(localFragPos, gbuffer.normal, viewLightDir, false);
 		hdr    += direct * sunLight;
 
-		outColor0.xyz = vec3(0.0, 1.0, 0.0);
+		outColor0.xyz = hdr;
 	}
 
 	if (gbuffer.layer == GBUFFER_LAYER_BASIC) {
@@ -161,7 +163,10 @@ void main() {
 		// (fakeSss = true disables normal-based bias)
 		hdr += direct * sunLight;
 
-		outColor0.xyz = vec3(1.0, 0.0, 0.0);
+		vec3 emissionLight  = gbuffer.albedo * EMISSIVE_LUMINANCE;
+		hdr                += gbuffer.emissive * emissionLight;
+
+		outColor0.xyz = hdr;
 	}
 
 	outColor0.w = 1.0;

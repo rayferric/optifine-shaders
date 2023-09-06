@@ -41,6 +41,7 @@ void main() {
 
 #ifdef FSH
 
+#include "/src/modules/blocks.glsl"
 #include "/src/modules/constants.glsl"
 #include "/src/modules/gamma.glsl"
 #include "/src/modules/gbuffer.glsl"
@@ -61,6 +62,11 @@ void main() {
 	gbuffer.skyLight     = v_AmbientLight.x;
 	gbuffer.blockLight   = v_AmbientLight.y;
 	gbuffer.layer        = GBUFFER_LAYER_TRANSLUCENT;
+
+	if (v_Entity.x == BLOCKS_WATER) {
+		gbuffer.roughness = 0.0;
+		gbuffer.layer     = GBUFFER_LAYER_WATER;
+	}
 
 	outColor0 = renderGBuffer0(gbuffer);
 	outColor1 = renderGBuffer1(gbuffer);

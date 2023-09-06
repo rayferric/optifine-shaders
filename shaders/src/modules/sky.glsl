@@ -30,7 +30,7 @@ vec3 fakeAtmosphere(in vec3 viewDir, in vec3 lightDir) {
 	sky                = mix(sky, SKY_ACCENT_COLOR, accentFactor);
 
 	// sky luminance affected by sun visibility
-	float skyLightnessFactor = smoothstep(-0.3, 0.2, lightDir.y);
+	float skyLightnessFactor  = smoothstep(-0.3, 0.2, lightDir.y);
 	sky                      *= skyLightnessFactor;
 
 	// sunlight fog
@@ -54,7 +54,7 @@ vec3 fakeAtmosphere(in vec3 viewDir, in vec3 lightDir) {
 	sky = mix(sky, SKY_HORIZON_COLOR, horizonViewFactor * lightTimeFactor);
 
 	// second sky luminance pass to dim the sunset light
-	float sunlightLightnessFactor = smoothstep(-0.3, 0.0, lightDir.y);
+	float sunlightLightnessFactor  = smoothstep(-0.3, 0.0, lightDir.y);
 	sky                           *= sunlightLightnessFactor;
 
 	// planet shadow
@@ -83,7 +83,7 @@ vec3 fakeIndirect(in vec3 lightDir) {
 	sky = mix(sky, SKY_ACCENT_COLOR, 0.75);
 
 	// sky luminance affected by sun visibility
-	float skyLightnessFactor = smoothstep(-0.3, 0.2, lightDir.y);
+	float skyLightnessFactor  = smoothstep(-0.3, 0.2, lightDir.y);
 	sky                      *= skyLightnessFactor;
 
 	// desaturation of the sky+accent color
@@ -96,11 +96,11 @@ vec3 fakeIndirect(in vec3 lightDir) {
 	sky = mix(sky, SKY_SUNLIGHT_COLOR, 0.3 * lightTimeFactor);
 
 	// second sky luminance pass to dim the sunset light
-	float sunlightLightnessFactor = smoothstep(-0.3, 0.0, lightDir.y);
+	float sunlightLightnessFactor  = smoothstep(-0.3, 0.0, lightDir.y);
 	sky                           *= sunlightLightnessFactor;
 
 	// planet shadow
-	float shadowNormalTrackFactor = smoothstep(-0.1, -0.3, lightDir.y);
+	float shadowNormalTrackFactor  = smoothstep(-0.1, -0.3, lightDir.y);
 	sky                           *= 1.0 - shadowNormalTrackFactor;
 
 	return sky / SKY_SUN_LUMINANCE;
@@ -119,7 +119,7 @@ vec3 fakeDirect(vec3 lightDir) {
 	direct              = mix(direct, SKY_HORIZON_COLOR, horizonFactor);
 
 	// luminance
-	float luminanceFactor = smoothstep(-0.3, 0.2, lightDir.y);
+	float luminanceFactor  = smoothstep(-0.3, 0.2, lightDir.y);
 	direct                *= luminanceFactor;
 
 	return direct;
@@ -152,10 +152,10 @@ vec3 stars(in vec3 viewDir, float quantity) {
 
 #define SKY_NIGHT_TINT vec3(0.0, 0.7, 1.0)
 vec3 sky(in vec3 viewDir, in vec3 sunDir, in vec3 moonDir) {
-	vec3 sky      = vec3(0.0);
+	vec3 sky       = vec3(0.0);
 	sky           += fakeAtmosphere(viewDir, sunDir) * SKY_SUN_LUMINANCE;
-	vec3 nightSky = fakeAtmosphere(viewDir, moonDir);
-	nightSky      = mix(nightSky, SKY_NIGHT_TINT, 0.5);
+	vec3 nightSky  = fakeAtmosphere(viewDir, moonDir);
+	nightSky       = mix(nightSky, SKY_NIGHT_TINT, 0.5);
 	sky           += nightSky * SKY_MOON_LUMINANCE;
 
 	// One daylight cycle in Minecraft takes 20 minutes, so we need to do one
@@ -174,10 +174,10 @@ vec3 sky(in vec3 viewDir, in vec3 sunDir, in vec3 moonDir) {
 }
 
 vec3 skyIndirect(in vec3 worldSunDir, in vec3 worldMoonDir) {
-	vec3 sky      = vec3(0.0);
+	vec3 sky       = vec3(0.0);
 	sky           += fakeIndirect(worldSunDir) * SKY_SUN_LUMINANCE;
-	vec3 nightSky = fakeIndirect(worldMoonDir);
-	nightSky      = mix(nightSky, SKY_NIGHT_TINT, 0.5);
+	vec3 nightSky  = fakeIndirect(worldMoonDir);
+	nightSky       = mix(nightSky, SKY_NIGHT_TINT, 0.5);
 	sky           += nightSky * SKY_MOON_LUMINANCE;
 	return sky;
 }

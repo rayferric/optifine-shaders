@@ -19,7 +19,7 @@
 vec3 hash(in vec3 value) {
 	// The spec requires input between 0 and 1:
 	// value = fract(value);
-	value = fract(value * 1234.567);
+	value  = fract(value * 1234.567);
 	value += dot(value, value.yxz + 123.4567);
 	return vec3(fract((value.xyz + value.yzx) * value.zxy));
 }

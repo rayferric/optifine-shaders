@@ -106,7 +106,7 @@ bool isInShadow(in vec3 worldPos) {
 	vec3 shadowClipPos = normalizedMul(shadowProjection, shadowViewPos);
 
 	shadowClipPos.xy *= getShadowDistortionFactor(shadowClipPos.xy);
-	vec3 shadowCoord = shadowClipPos * 0.5 + 0.5;
+	vec3 shadowCoord  = shadowClipPos * 0.5 + 0.5;
 
 	return shadowCoord.z > texture(shadowtex0, shadowCoord.xy).x;
 }
@@ -147,10 +147,10 @@ vec3 softShadow(
 		    shadowClipPos.xy +
 		    (unitOffset * SHADOW_MAX_PENUMBRA * shadowProjScale);
 		offsetShadowClipPos *= getShadowDistortionFactor(offsetShadowClipPos);
-		vec2 shadowUv       = offsetShadowClipPos * 0.5 + 0.5;
+		vec2 shadowUv        = offsetShadowClipPos * 0.5 + 0.5;
 
-		float occluderDepth = texture(shadowtex1, shadowUv).x;
-		float inShadow      = step(occluderDepth, shadowDepth);
+		float occluderDepth  = texture(shadowtex1, shadowUv).x;
+		float inShadow       = step(occluderDepth, shadowDepth);
 		occlusionDepth      += occluderDepth * inShadow;
 		occludedSamples     += inShadow;
 	}

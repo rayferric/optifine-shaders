@@ -70,12 +70,12 @@ RayMarchResult rayMarch(
 		if (screenEnd.x < 0.0 || screenEnd.x > 1.0) {
 			float xDelta = screenEnd.x < 0.0 ? -screenEnd.x : screenEnd.x - 1.0;
 			float xScale = xDelta / abs(screenDir.x);
-			screenEnd    -= screenDir * xScale;
+			screenEnd -= screenDir * xScale;
 		}
 		if (screenEnd.y < 0.0 || screenEnd.y > 1.0) {
 			float yDelta = screenEnd.y < 0.0 ? -screenEnd.y : screenEnd.y - 1.0;
 			float yScale = yDelta / abs(screenDir.y);
-			screenEnd    -= screenDir * yScale;
+			screenEnd -= screenDir * yScale;
 		}
 
 		// Recalculate 3D endpoint backwards using the new screenEnd.
@@ -207,8 +207,8 @@ RayMarchResult rayMarch(
 				finalCoord = inFront ? finalCoord : screen;
 			}
 
-			float thickness = rayDepth * 0.1 + 1.0;
-			thickness       = pow(thickness, 1.5);
+			float thickness  = rayDepth * 0.1 + 1.0;
+			thickness        = pow(thickness, 1.5);
 			thickness       -= 1.0;
 			if (depthDiff > thickness) {
 				break;

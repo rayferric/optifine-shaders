@@ -3,8 +3,9 @@
 #define MIN_EXPOSURE 0.5
 #define MAX_EXPOSURE 20.0
 
-#define MIN_LIGHT_FACTOR   0.0
-#define BLOCK_LIGHT_ENERGY (vec3(1.0, 0.7, 0.4) * 0.5) // color * luminance
+#define MIN_LIGHT_FACTOR      0.0
+#define BLOCK_LIGHT_LUMINANCE (vec3(1.0, 0.7, 0.4) * 0.5)
+#define EMISSIVE_LUMINANCE    0.03
 
 #define AUTO_EXPOSURE_LUMINANCE_SAMPLES 10
 

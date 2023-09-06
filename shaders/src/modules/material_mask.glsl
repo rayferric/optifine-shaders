@@ -22,7 +22,7 @@ struct MaterialMask {
  * @return 8-bit precise floating-point value in range [0, 1]
  */
 float encodeMask(in MaterialMask mask) {
-	int i = 0;
+	int i  = 0;
 	i     |= int(mask.isLit) << 0;
 	i     |= int(mask.isEmissive) << 1;
 	i     |= int(mask.isTranslucent) << 2;

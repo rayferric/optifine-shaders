@@ -186,9 +186,9 @@ vec4 clouds(
 	// 	clouds.w   = 1.0 - (1.0 - background.w) * (1.0 - clouds.w);
 	// }
 
-	vec4 data = sdfRayMarch(origin, viewDir, 128, 0.01);
+	vec4 data  = sdfRayMarch(origin, viewDir, 128, 0.01);
 	data.xyz  *= 50.0;
-	data.w    = data.w < min(300.0, maxDistance) ? 1.0 : 0.0;
+	data.w     = data.w < min(300.0, maxDistance) ? 1.0 : 0.0;
 	return data;
 }
 

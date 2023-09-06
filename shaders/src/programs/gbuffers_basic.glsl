@@ -41,14 +41,14 @@ void main() {
 	color      *= v_Color;
 
 	// alpha test
-	if (color.w * v_Color.w < EPSILON) {
+	if (color.w < EPSILON) {
 		discard;
 	}
 
 	GBuffer gbuffer;
-	gbuffer.albedo     = gammaToLinear(color.xyz);
-	gbuffer.emissive   = 0.0; // set for lit particles and world border
-	gbuffer.skyLight   = v_AmbientLight.x;
+	gbuffer.albedo   = gammaToLinear(color.xyz);
+	gbuffer.emissive = 0.0; // TODO: set for glowing particles and world border?
+	gbuffer.skyLight = v_AmbientLight.x;
 	gbuffer.blockLight = v_AmbientLight.y;
 	gbuffer.layer      = GBUFFER_LAYER_BASIC;
 

@@ -210,7 +210,7 @@ IndirectContribution indirectContribution(
 	vec2 brdf = approxBrdf(cosNe, roughness);
 	specular  = specular * brdf.x + brdf.y;
 
-	vec3 transmitted = diffuse * transmissive;
+	vec3 transmitted  = diffuse * transmissive;
 	diffuse          -= transmitted;
 
 	return IndirectContribution(diffuse, specular, transmitted);

@@ -63,11 +63,11 @@ vec3 readBloomAtlas(in sampler2D atlas, in vec2 screenPos) {
 	float weight = 1.0;
 
 	for (int lod = 1; lod <= BLOOM_LEVELS; lod++) {
-		vec2 tilePos = screenPos;
+		vec2 tilePos  = screenPos;
 		tilePos      *= exp2(-float(lod)); // /= exp2(lod)
 		tilePos      += 1.0 - exp2(1.0 - float(lod));
 
-		vec3 level = texture(atlas, tilePos).xyz;
+		vec3 level  = texture(atlas, tilePos).xyz;
 		color.xyz  += level * level * weight;
 		color.w    += weight;
 	}

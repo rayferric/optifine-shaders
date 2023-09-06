@@ -61,7 +61,7 @@ remapMaterialProperties(in MaterialProperties properties, in vec3 entity) {
 		vec3 hsv = rgbToHsv(properties.albedo);
 		if (hsv.y > 0.5 && hsv.x < 0.05 || hsv.z > 0.95) { // Find red spots
 			properties.albedo   *= 0.5;
-			properties.emissive = 1.0;
+			properties.emissive  = 1.0;
 		}
 	} else if (id == 10014 || id == 10015) {
 		// Lit Redstone Ore
@@ -70,7 +70,7 @@ remapMaterialProperties(in MaterialProperties properties, in vec3 entity) {
 	} else if (id == 10018) {
 		// Glow Lichen
 		properties.albedo   *= luminance(properties.albedo) * 2.0;
-		properties.emissive = 1.0;
+		properties.emissive  = 1.0;
 	}
 
 	// #ifdef GLOWING_ORES

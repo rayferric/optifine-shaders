@@ -46,9 +46,10 @@ void main() {
 #include "/src/modules/constants.glsl"
 
 void main() {
-	vec4 color = texture(texture, v_TexCoord);
+	vec4 color  = texture(texture, v_TexCoord);
 	color      *= v_Color;
 
+	// alpha test
 	if (color.w < EPSILON) {
 		discard;
 	}
