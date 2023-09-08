@@ -10,7 +10,7 @@ The tagged version 0.0.1 is a previous in-dev snapshot that happened to work wit
 
 My shaderpack has the following range o features:
 - Physically Based Shading Model (Described [Here](https://learnopengl.com))
-- Transmittance and Volumetric Light Absorbance Physics
+- Transmittance and Absorption Fog in Volumes
 - Screen Space Reflections
 - Screen Space Ambient Occlusion
 - Variable Penumbra Smooth Shadows
@@ -47,5 +47,9 @@ Currently known bugs and design flaws:
 - High roughness SSR results in unrealistic blue-ish fresnel effect (mainly visible on leaves where roughness is about 0.6).
 - The hash function sometimes reveals itself due of the lack of fract() on input (adding it breaks nighttime stars for some reason).
 - The subsurface PBR property remains mostly useless and is only used to enable fake SSS for foliage over the 0.5 threshold.
+- Sky colors are still a bit off and the planet shadow fades in too fast.
+- Sunlight does not fade out during the twilight.
+- Moon is too dim (probably because of nighttime color correction?)
+- SSAO has a hideous falloff.
 - World border is incorrectly rendered using mixed GBuffer data from both the border pass and the terrain pass.
 - Water is not visible behind clear glass due to it being draw with transmittance instead of using the alpha test.
