@@ -53,7 +53,7 @@ float getShadowBias(in vec3 normal, in vec3 lightDir) {
 	float cosTheta = dot(normal, lightDir);
 	float angleFactor =
 	    sqrt(1.0 - cosTheta * cosTheta) / cosTheta; // = tan(acos(cosTheta));
-	return angleFactor * 0.001;
+	return angleFactor * 0.0005;
 }
 
 float getShadowFadeOpacity(vec2 shadowClipPos, vec3 worldPos) {
@@ -92,8 +92,6 @@ vec3 getShadowColor(in vec3 shadowCoord) {
 
 	vec3 shadowColor = gammaToLinear(texture(shadowcolor0, shadowCoord.xy).xyz);
 
-	return vec3(opaqueShading);
-
 	return (opaqueShading - shading) * shadowColor + shading;
 }
 
@@ -119,6 +117,7 @@ bool isInShadow(in vec3 worldPos) {
 }
 
 #define VARIABLE_PENUMBRA_SHADOW
+#define COLORED_SHADOW
 #define SHADOW_DISTANCE_SAMPLES 4
 #define SHADOW_MIN_PENUMBRA     0.025
 #define SHADOW_MAX_PENUMBRA     0.2 // In meters
@@ -198,7 +197,7 @@ vec3 softShadow(
 #ifdef COLORED_SHADOW
 		color += getShadowColor(shadowCoord);
 #else
-		color += step(shadowCoord.z, texture(shadowtex1, shadowCoord.xy).x);
+		color += step(shadowCoord.z, texture(shadowtex0, shadowCoord.xy).x);
 #endif
 	}
 

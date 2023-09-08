@@ -19,6 +19,7 @@
 #define GBUFFER_LAYER_BASIC       3 // lines, particles
 #define GBUFFER_LAYER_WATER       4 // volumetric water
 #define GBUFFER_LAYER_ICE         5 // volumetric ice
+#define GBUFFER_LAYER_HONEY       6 // volumetric honey
 
 /**
  * @brief Classifies materials.
@@ -39,8 +40,6 @@ struct GBuffer {
 	float skyLight;
 	float blockLight;
 	int   layer;
-
-	float opacity; // only basic surfaces
 };
 
 #ifdef DEFERRED
@@ -61,7 +60,7 @@ GBuffer sampleGBuffer(in vec2 texCoord) {
 	gbuffer.roughness = sample2.y;
 	gbuffer.metallic  = sample2.z;
 
-	gbuffer.subsurface   = sample2.x;
+	gbuffer.subsurface   = sample3.x;
 	gbuffer.emissive     = sample3.y;
 	gbuffer.transmissive = sample3.z;
 

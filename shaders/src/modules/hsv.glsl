@@ -12,7 +12,7 @@ vec3 rgbToHsv(vec3 rgb) {
 	return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 }
 
-// Might not work correctly.
+// TODO: not the perfect inverse of rgbToHsv
 vec3 hsvToRgb(vec3 hsv) {
 	vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 	vec3 p = abs(fract(hsv.xxx + K.xyz) * 6.0 - K.www);

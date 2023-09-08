@@ -186,8 +186,7 @@ vec3 skyDirectSun(in vec3 worldSunDir) {
 	return fakeDirect(worldSunDir) * SKY_SUN_LUMINANCE;
 }
 
-#define SKY_FOG_
-vec3 fog(
+vec3 skyFog(
     in vec3 color,
     in vec3 localFragPos,
     in vec3 worldSunDir,

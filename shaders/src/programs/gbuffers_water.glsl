@@ -3,6 +3,7 @@ varying vec2 v_TexCoord;
 varying vec2 v_AmbientLight;
 varying mat3 v_TBN;
 varying vec3 v_Entity;
+varying vec2 v_BlockFacePos;
 
 ///////////////////
 // Vertex Shader //
@@ -28,7 +29,10 @@ void main() {
 	vec3 binormal = normalize(cross(normal, tangent) * at_tangent.w);
 	v_TBN         = mat3(tangent, binormal, normal);
 
-	v_Entity = mc_Entity;
+	v_Entity          = mc_Entity;
+	v_BlockFacePos    = v_TexCoord - mc_midTexCoord;
+	v_BlockFacePos   *= 32.0;
+	v_BlockFacePos.x *= float(atlasSize.x) / float(atlasSize.y);
 
 	gl_Position = ftransform();
 }
@@ -48,10 +52,15 @@ void main() {
 #include "/src/modules/rp.glsl"
 
 void main() {
-	RPSample rp = sampleRp(v_TexCoord);
+	RPSample rp = sampleRp(v_TexCoord, v_Entity, v_BlockFacePos);
 
 	GBuffer gbuffer;
 	gbuffer.albedo = rp.albedo * gammaToLinear(v_Color.xyz);
+	// gbuffer.albedo = vec3(
+	//     step(0.4, max(abs(v_BlockFacePos.x), abs(v_BlockFacePos.y))),
+	//     0.0,
+	//     0.0
+	// );
 	gbuffer.normal = normalize(v_TBN * rp.normal);
 	// gbuffer.occlusion    = rp.occlusion;
 	gbuffer.roughness = rp.roughness;
@@ -63,9 +72,21 @@ void main() {
 	gbuffer.blockLight   = v_AmbientLight.y;
 	gbuffer.layer        = GBUFFER_LAYER_TRANSLUCENT;
 
-	if (v_Entity.x == BLOCKS_WATER) {
-		gbuffer.roughness = 0.0;
-		gbuffer.layer     = GBUFFER_LAYER_WATER;
+	int id = int(v_Entity.x + 0.5);
+
+	if (id == BLOCKS_WATER) {
+		gbuffer.albedo       = vec3(1.0);
+		gbuffer.roughness    = 0.0;
+		gbuffer.transmissive = 1.0;
+		gbuffer.layer        = GBUFFER_LAYER_WATER;
+	}
+
+	if (id == BLOCKS_ICE) {
+		gbuffer.layer = GBUFFER_LAYER_ICE;
+	}
+
+	if (id == BLOCKS_HONEY) {
+		gbuffer.layer = GBUFFER_LAYER_HONEY;
 	}
 
 	outColor0 = renderGBuffer0(gbuffer);

@@ -3,6 +3,7 @@ varying vec2 v_TexCoord;
 varying vec2 v_AmbientLight;
 varying mat3 v_TBN;
 varying vec3 v_Entity;
+varying vec2 v_BlockFacePos;
 
 ///////////////////
 // Vertex Shader //
@@ -28,7 +29,10 @@ void main() {
 	vec3 binormal = normalize(cross(normal, tangent) * at_tangent.w);
 	v_TBN         = mat3(tangent, binormal, normal);
 
-	v_Entity = mc_Entity;
+	v_Entity          = mc_Entity;
+	v_BlockFacePos    = v_TexCoord - mc_midTexCoord;
+	v_BlockFacePos   *= 32.0;
+	v_BlockFacePos.x *= float(atlasSize.x) / float(atlasSize.y);
 
 	gl_Position = ftransform();
 }
@@ -47,7 +51,7 @@ void main() {
 #include "/src/modules/rp.glsl"
 
 void main() {
-	RPSample rp = sampleRp(v_TexCoord);
+	RPSample rp = sampleRp(v_TexCoord, v_Entity, v_BlockFacePos);
 
 	// alpha test
 	if (rp.opacity * v_Color.w < EPSILON) {
@@ -55,7 +59,8 @@ void main() {
 	}
 
 	GBuffer gbuffer;
-	gbuffer.albedo     = rp.albedo * gammaToLinear(v_Color.xyz);
+	gbuffer.albedo = rp.albedo * gammaToLinear(v_Color.xyz);
+	// gbuffer.albedo     = normalize(v_TBN * rp.normal) * 0.5 + 0.5;
 	gbuffer.normal     = normalize(v_TBN * rp.normal);
 	gbuffer.occlusion  = rp.occlusion;
 	gbuffer.roughness  = rp.roughness;
@@ -66,6 +71,16 @@ void main() {
 	gbuffer.skyLight   = v_AmbientLight.x;
 	gbuffer.blockLight = v_AmbientLight.y;
 	gbuffer.layer      = GBUFFER_LAYER_OPAQUE;
+
+	int id = int(v_Entity.x + 0.5);
+	if (id == BLOCKS_SINGLE_PLANT || id == BLOCKS_MULTI_PLANT) {
+		// Normals face up for seamless lighting with grass blocks.
+		gbuffer.normal     = mat3(gbufferModelView) * vec3(0.0, 1.0, 0.0);
+		gbuffer.subsurface = 1.0;
+	}
+	if (id == BLOCKS_LEAVES) {
+		gbuffer.subsurface = 1.0;
+	}
 
 	outColor0 = renderGBuffer0(gbuffer);
 	outColor1 = renderGBuffer1(gbuffer);

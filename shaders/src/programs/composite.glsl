@@ -20,8 +20,8 @@ void main() {
 
 #ifdef FSH
 
-#include "/src/modules/clouds.glsl"
 #include "/src/modules/gbuffer.glsl"
+#include "/src/modules/luminance.glsl"
 #include "/src/modules/pbr.glsl"
 #include "/src/modules/screen_to_view.glsl"
 #include "/src/modules/shadow.glsl"
@@ -51,12 +51,20 @@ void main() {
 
 	GBuffer gbuffer = sampleGBuffer(v_TexCoord);
 
-	vec3 skyLight   = gbuffer.skyLight * skyIndirect(worldSunDir, worldMoonDir);
-	vec3 blockLight = gbuffer.blockLight * BLOCK_LIGHT_LUMINANCE;
-	vec3 sunLight   = skyDirectSun(worldSunDir);
+	vec3 skyIndirect = skyIndirect(worldSunDir, worldMoonDir);
+	vec3 skyLight    = gbuffer.skyLight * skyIndirect;
+	vec3 blockLight  = gbuffer.blockLight * BLOCK_LIGHT_LUMINANCE;
+	vec3 sunLight    = skyDirectSun(worldSunDir);
 
-	// outColor0.xyz = vec3(float(gbuffer.layer) / 3.0);
-	// return;
+	// medium thickness
+	float thickness = 0.0;
+	if (gbuffer.layer != GBUFFER_LAYER_OPAQUE) {
+		vec3 viewOpaqueFragPos = screenToView(v_TexCoord, depthtex1);
+		thickness = length(viewOpaqueFragPos) - length(viewFragPos);
+	}
+	if (isEyeInWater == 1) {
+		thickness = length(viewFragPos);
+	}
 
 	if (gbuffer.layer == GBUFFER_LAYER_SKY) {
 		outColor0.xyz = texture(colortex5, v_TexCoord).xyz;
@@ -65,36 +73,32 @@ void main() {
 	if (gbuffer.layer == GBUFFER_LAYER_OPAQUE) {
 		vec3 hdr = texture(colortex5, v_TexCoord).xyz;
 
-		if (gbuffer.roughness < 0.5) {
-			IndirectContribution indirect = indirectContribution(
-			    gbuffer.albedo,
-			    gbuffer.roughness,
-			    gbuffer.metallic,
-			    0.0, // transmissive
-			    gbuffer.normal,
-			    viewEyeDir
-			);
+		// if (gbuffer.roughness < MAX_SSR_ROUGHNESS) {
+		IndirectContribution indirect = indirectContribution(
+		    gbuffer.albedo,
+		    gbuffer.roughness,
+		    gbuffer.metallic,
+		    0.0, // transmissive
+		    gbuffer.normal,
+		    viewEyeDir
+		);
 
-			// specular with SSR
-			vec3 viewIncoming = importanceGgx(
-			    hash(frameTimeCounter * viewFragPos).xy,
-			    gbuffer.normal,
-			    -normalize(viewFragPos),
-			    gbuffer.roughness
-			);
-			if (dot(viewIncoming, gbuffer.normal) < 0.0) {
-				viewIncoming = reflect(viewIncoming, gbuffer.normal);
-			}
-
-			vec3 worldIncoming =
-			    normalize(mat3(gbufferModelViewInverse) * viewIncoming);
-			vec3 fallback = sky(worldIncoming, worldSunDir, worldMoonDir);
-			vec4 ssr      = computeSsReflection(
-                colortex5, depthtex2, viewFragPos, viewIncoming
-            );
-			vec3 reflectionLight  = mix(fallback, ssr.xyz, ssr.w);
-			hdr                  += indirect.specular * reflectionLight;
+		// specular with SSR
+		SSR ssr = computeSsReflection(
+		    colortex5, depthtex2, viewFragPos, gbuffer.normal, gbuffer.roughness
+		);
+		vec3  worldDir  = normalize(mat3(gbufferModelViewInverse) * ssr.dir);
+		vec3  fallback  = sky(worldDir, worldSunDir, worldMoonDir);
+		float skyFactor = smoothstep(-0.4, 0.4, worldDir.y);
+		fallback = mix(vec3(luminance(skyIndirect * 0.1)), fallback, skyFactor);
+		fallback             *= smoothstep(0.0, 0.8, gbuffer.skyLight);
+		fallback             *= 1.0 - float(isEyeInWater == 1);
+		vec3 reflectionLight  = mix(fallback, ssr.color, ssr.opacity);
+		if (isEyeInWater == 1) {
+			// extinction on the path from mirror surface to the eye
+			reflectionLight *= exp(-thickness * WATER_ABSORPTION);
 		}
+		hdr += indirect.specular * reflectionLight;
 
 		vec3 emissionLight  = gbuffer.albedo * EMISSIVE_LUMINANCE;
 		hdr                += gbuffer.emissive * emissionLight;
@@ -102,7 +106,10 @@ void main() {
 		outColor0.xyz = hdr;
 	}
 
-	if (gbuffer.layer == GBUFFER_LAYER_TRANSLUCENT) {
+	if (gbuffer.layer == GBUFFER_LAYER_TRANSLUCENT ||
+	    gbuffer.layer == GBUFFER_LAYER_WATER ||
+	    gbuffer.layer == GBUFFER_LAYER_ICE ||
+	    gbuffer.layer == GBUFFER_LAYER_HONEY) {
 		IndirectContribution indirect = indirectContribution(
 		    gbuffer.albedo,
 		    gbuffer.roughness,
@@ -116,24 +123,33 @@ void main() {
 		vec3 hdr = indirect.diffuse * (skyLight + blockLight);
 
 		// specular with SSR
-		vec3 viewIncoming = importanceGgx(
-		    hash(frameTimeCounter * viewFragPos).xy,
-		    gbuffer.normal,
-		    -normalize(viewFragPos),
-		    gbuffer.roughness
+		SSR ssr = computeSsReflection(
+		    colortex5, depthtex2, viewFragPos, gbuffer.normal, gbuffer.roughness
 		);
-		vec3 worldIncoming =
-		    normalize(mat3(gbufferModelViewInverse) * viewIncoming);
-		vec3 fallback = sky(worldIncoming, worldSunDir, worldMoonDir);
-		vec4 ssr      = computeSsReflection(
-            colortex5, depthtex2, viewFragPos, viewIncoming
-        );
-		vec3 reflectionLight  = mix(fallback, ssr.xyz, ssr.w);
-		hdr                  += indirect.specular * reflectionLight;
+		vec3  worldDir  = normalize(mat3(gbufferModelViewInverse) * ssr.dir);
+		vec3  fallback  = sky(worldDir, worldSunDir, worldMoonDir);
+		float skyFactor = smoothstep(-0.4, 0.0, worldDir.y);
+		fallback = mix(vec3(luminance(skyIndirect * 0.1)), fallback, skyFactor);
+		fallback             *= smoothstep(0.0, 0.8, gbuffer.skyLight);
+		fallback             *= 1.0 - float(isEyeInWater == 1);
+		vec3 reflectionLight  = mix(fallback, ssr.color, ssr.opacity);
+		if (isEyeInWater == 1) {
+			// extinction on the path from mirror surface to the eye
+			reflectionLight *= exp(-thickness * WATER_ABSORPTION);
+		}
+		hdr += indirect.specular * reflectionLight;
 
 		// transmissive
-		vec3 transmissionLight  = texture(colortex5, v_TexCoord).xyz;
-		hdr                    += indirect.transmitted * transmissionLight;
+		vec3 transmissionLight = texture(colortex5, v_TexCoord).xyz;
+		if (gbuffer.layer == GBUFFER_LAYER_WATER) {
+			transmissionLight *= exp(-thickness * WATER_ABSORPTION);
+		} else if (gbuffer.layer == GBUFFER_LAYER_ICE) {
+			transmissionLight *= exp(-thickness * ICE_ABSORPTION);
+		} else if (gbuffer.layer == GBUFFER_LAYER_HONEY) {
+			// limit honey thickness to 5 blocks
+			transmissionLight *= exp(-min(thickness, 5.0) * HONEY_ABSORPTION);
+		}
+		hdr += indirect.transmitted * transmissionLight;
 
 		vec3 direct = directContribution(
 		    gbuffer.albedo,
@@ -168,6 +184,9 @@ void main() {
 
 		outColor0.xyz = hdr;
 	}
+
+	// outColor0.xyz =
+	//     skyFog(outColor0.xyz, localFragPos, worldSunDir, worldMoonDir);
 
 	outColor0.w = 1.0;
 }

@@ -27,6 +27,7 @@ generated.append("")
 generated.append('// This file is generated from block.properties using generate_blocks_glsl.py;')
 generated.append("// Please do not edit.")
 generated.append("")
+generated.append("#define BLOCKS_UNKNOWN 0")
 
 for block_category, block_id in category_ids.items():
     generated.append(f"#define BLOCKS_{block_category} {block_id}")

@@ -1,5 +1,6 @@
 varying vec4 v_Color;
 varying vec2 v_TexCoord;
+varying vec3 v_Entity;
 
 ///////////////////
 // Vertex Shader //
@@ -12,11 +13,7 @@ varying vec2 v_TexCoord;
 void main() {
 	v_Color    = gl_Color;
 	v_TexCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-
-	gl_Position = ftransform();
-
-	v_Color    = gl_Color;
-	v_TexCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+	v_Entity   = mc_Entity;
 
 	// We can use the fact that most waving vertices will have integer
 	// coordinates to fix precision errors by rounding
@@ -30,8 +27,7 @@ void main() {
 	//     mc_midTexCoord.y > gl_MultiTexCoord0.y
 	// );
 
-	gl_Position =
-	    gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(vertexPos, 1.0);
+	gl_Position     = ftransform();
 	gl_Position.xy *= getShadowDistortionFactor(gl_Position.xy);
 }
 
@@ -43,6 +39,7 @@ void main() {
 
 #ifdef FSH
 
+#include "/src/modules/blocks.glsl"
 #include "/src/modules/constants.glsl"
 
 void main() {
@@ -54,7 +51,12 @@ void main() {
 		discard;
 	}
 
-	outColor0 = color;
+	if (int(v_Entity.x + 0.5) == BLOCKS_WATER) {
+		discard;
+	}
+
+	outColor0.xyz = color.xyz;
+	outColor0.w   = 1.0;
 }
 
 /* RENDERTARGETS: 0 */

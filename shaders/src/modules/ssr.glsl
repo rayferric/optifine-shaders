@@ -13,11 +13,17 @@
 #define SSR_NEAR_TOLERANCE 1.0
 #define SSR_FAR_TOLERANCE  1.0
 
+struct SSR {
+	vec3  color;
+	float opacity;
+	vec3  dir;
+};
+
 /**
  * @brief Calculates reflection color at given fragment position.
  *
- * @param colorTex     HDR texture that contains already calculated screen
- * energy
+ * @param hdrTex     HDR texture that contains already calculated screen
+ * luminance
  * @param depthTex     depth buffer to be sampled
  * @param fragPos      fragment's position in view space
  * @param viewIncoming incoming light direction in view space (reflected view
@@ -25,12 +31,25 @@
  *
  * @return    reflection color + alpha
  */
-vec4 computeSsReflection(
-    in sampler2D colorTex,
+SSR computeSsReflection(
+    in sampler2D hdrTex,
     in sampler2D depthTex,
     in vec3      viewFragPos,
-    in vec3      viewIncoming
+    in vec3      viewNormal,
+    in float     roughness
 ) {
+	vec3 viewIncoming = importanceGgx(
+	    hash(frameTimeCounter * viewFragPos).xy,
+	    viewNormal,
+	    -normalize(viewFragPos),
+	    roughness
+	);
+
+	// Check if the specular lobe intersects the face.
+	if (dot(viewIncoming, viewNormal) < 0.0) {
+		viewIncoming = reflect(viewIncoming, viewNormal);
+	}
+
 	RayMarchResult result = rayMarch(
 	    depthTex,
 	    viewFragPos,
@@ -51,21 +70,36 @@ vec4 computeSsReflection(
 	float fade  = smoothstep(0.0, 0.2, 1.0 - bound);
 	// fade        = 1.0;
 
-	// vec3 color = vec3(0.8, 0.9, 1.0) * SUN_ILLUMINANCE * 0.125 *
-	// skyFactor;
-	vec4 color = vec4(0.0);
+	SSR ssr;
 	if (result.hasHit) {
-		color.xyz = texture(colorTex, result.coord).xyz;
-		color.w   = fade;
+		ssr.color   = texture(hdrTex, result.coord).xyz;
+		ssr.opacity = fade;
+	} else {
+		ssr.color   = vec3(0.0);
+		ssr.opacity = 0.0;
 	}
+	ssr.dir = viewIncoming;
 
-	return color;
+	// vec3 worldIncoming =
+	//     normalize(mat3(gbufferModelViewInverse) * viewIncoming);
+	// vec3  fallback     = sky(worldIncoming, worldSunDir, worldMoonDir);
+	// float groundFactor = 1.0 - smoothstep(-0.4, 0.4, worldIncoming.y);
+	// fallback  = mix(fallback, vec3(luminance(skyIndirect * 0.1)),
+	// groundFactor); fallback *= smoothstep(0.0, 0.8, gbuffer.skyLight);
+	// fallback *= 1.0 - float(isEyeInWater == 1);
+	// vec3 reflectionLight = mix(fallback, ssr.color, ssr.opacity);
+	// if (isEyeInWater == 1) {
+	// 	// extinction on the path from mirror surface to the eye
+	// 	reflectionLight *= exp(-thickness * WATER_ABSORPTION);
+	// }
+
+	return ssr;
 }
 
 /**
  * @brief Calculates refraction color at given fragment position.
  *
- * @param colorTex     HDR texture that contains already calculated screen
+ * @param hdrTex     HDR texture that contains already calculated screen
  * energy
  * @param depthTex     depth buffer to be sampled
  * @param fragPos      fragment's position in view space
@@ -76,7 +110,7 @@ vec4 computeSsReflection(
  *
  * @return    reflection color
  */
-// vec3 computeSSRefraction(in sampler2D colorTex, in sampler2D depthTex, in
+// vec3 computeSSRefraction(in sampler2D hdrTex, in sampler2D depthTex, in
 // vec3 fragPos, in vec3 normal, in float ior, in float roughness, in float
 // skyFactor) { 	vec3 viewDir = normalize(fragPos); 	vec3 dir =
 // refract(viewDir, normal, ior); 	if (length(dir) == 0.0)dir =
@@ -88,9 +122,9 @@ vec4 computeSsReflection(
 // 	float screenEdgeFactor = clamp(1.0 - (dCoord.x + dCoord.y), 0.0, 1.0);
 
 // 	vec3 fallback = getSkyEnergy(dir) * skyFactor;
-// 	return mix(fallback, texture(colorTex, coord.xy).xyz, coord.z);
+// 	return mix(fallback, texture(hdrTex, coord.xy).xyz, coord.z);
 // }
-// vec3 computeSSRefraction(in sampler2D colorTex, in sampler2D depthTex, in
+// vec3 computeSSRefraction(in sampler2D hdrTex, in sampler2D depthTex, in
 // vec3 viewFragPos, in vec3 normal, in float roughness, in float ior) { 	vec3
 // viewDir = normalize(viewFragPos); 	vec3 dir = refract(viewDir, normal,
 // ior); if (length(dir) == 0.0) 		dir = reflect(viewDir, normal); 	vec3
@@ -104,7 +138,7 @@ vec4 computeSsReflection(
 
 // 	vec3 color = vec3(0.8, 0.9, 1.0) * SUN_ILLUMINANCE * 0.125;
 // 	if (result.hasHit)
-// 		color = texture(colorTex, result.coord).xyz;
+// 		color = texture(hdrTex, result.coord).xyz;
 // 	return color;
 // }
 

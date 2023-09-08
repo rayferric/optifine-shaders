@@ -20,7 +20,6 @@ void main() {
 
 #ifdef FSH
 
-#include "/src/modules/clouds.glsl"
 #include "/src/modules/gbuffer.glsl"
 #include "/src/modules/pbr.glsl"
 #include "/src/modules/screen_to_view.glsl"
@@ -54,6 +53,13 @@ void main() {
 	vec3 blockLight = gbuffer.blockLight * BLOCK_LIGHT_LUMINANCE;
 	vec3 sunLight   = skyDirectSun(worldSunDir);
 
+	if (isEyeInWater == 1) {
+		// Color skylight and sunlight blue when underwater.
+		// (water does not cast shadow)
+		skyLight *= UNDERWATER_SKYLIGHT_TINT;
+		sunLight *= UNDERWATER_SUNLIGHT_TINT;
+	}
+
 	if (gbuffer.layer == GBUFFER_LAYER_SKY) {
 		outColor0.xyz = sky(-worldEyeDir, worldSunDir, worldMoonDir);
 	}
@@ -79,10 +85,16 @@ void main() {
 		    gbuffer.normal,
 		    viewEyeDir,
 		    viewLightDir,
-		    false
+		    gbuffer.subsurface > 0.5
 		);
-		direct *= softShadow(localFragPos, gbuffer.normal, viewLightDir, false);
-		hdr    += direct * sunLight;
+		direct *= softShadow(
+		    localFragPos, gbuffer.normal, viewLightDir, gbuffer.subsurface > 0.5
+		);
+		// if (isEyeInWater != 1) {
+		direct *=
+		    smoothstep(0.0, 0.01, gbuffer.skyLight); // cave light leak fix;
+		// }
+		hdr += direct * sunLight;
 
 		outColor0.xyz = hdr;
 	}

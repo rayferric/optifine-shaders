@@ -6,10 +6,6 @@
 #include "/src/modules/normalized_mul.glsl"
 #include "/src/modules/temporal_jitter.glsl"
 
-#define SSAO_RADIUS   0.25
-#define SSAO_EXPONENT 0.75
-#define SSAO_SAMPLES  4
-
 /**
  * @brief Approximates ambient occlusion in screen space.
  *
