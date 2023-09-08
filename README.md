@@ -4,7 +4,7 @@ This is my take at developing a Minecraft shaderpack completely from scratch. Th
 
 ## Important Note
 
-The tagged version 0.0.1 is a previous in-dev snapshot that happened to work without many errors of the shaderpack. However it is not quite ready for production and the codebase has been completely reworked since then.
+The tagged version 0.0.1 is a previous in-dev snapshot that happened to work without many errors. However it is not quite ready for production and the codebase has been completely reworked since then.
 
 ## Features and Bugs
 
