@@ -2,6 +2,15 @@
 
 This is my take at developing a Minecraft shaderpack completely from scratch. That means no code is taken from existing shaderpacks so you might encounter both good and poor quality solutions applied here. By implementing all the functionality myself, I hope to learn everything about physically based shading in games.
 
+## Gallery
+
+![](./screenshots/3.jpg)
+![](./screenshots/9.jpg)
+![](./screenshots/10.jpg)
+![](./screenshots/12.jpg)
+![](./screenshots/13.jpg)
+![](./screenshots/17.jpg)
+
 ## Important Note
 
 The tagged version 0.0.1 is a previous in-dev snapshot that happened to work without many errors. However it is not quite ready for production and the codebase has been completely reworked since then.
@@ -53,12 +62,3 @@ Currently known bugs and design flaws:
 - SSAO has a hideous falloff.
 - World border is incorrectly rendered using mixed GBuffer data from both the border pass and the terrain pass.
 - Water is not visible behind clear glass due to it being draw with transmittance instead of using the alpha test.
-
-## Gallery
-
-![](./screenshots/3.jpg)
-![](./screenshots/9.jpg)
-![](./screenshots/10.jpg)
-![](./screenshots/12.jpg)
-![](./screenshots/13.jpg)
-![](./screenshots/17.jpg)
